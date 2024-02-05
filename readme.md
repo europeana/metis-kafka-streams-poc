@@ -18,6 +18,4 @@ minimal task definition syntax:
 {dataset id}"}
 
 Example of task definition:
-{"
-fileUrl": "https://ecloud-test.apps.dcw1.paas.psnc.pl/mcs/records/F4VSSQKDRUEECT7OUSLLLBTLPI2SD57P7R5E6JCBOENATL3DVRFA/representations/metadataRecord/versions/3ef665b0-b933-11ee-8000-4e008e54a287/files/dceef4b7-d9c1-3632-8715-34301a7c7851","throttleLevel":"MEDIUM", "
-taskId":"123", "outputDataset":"02749bdb-eaac-4794-98cd-ebdd6de1ce45"}
+{"fileUrl": "https://ecloud-test.apps.dcw1.paas.psnc.pl/mcs/records/F4VSSQKDRUEECT7OUSLLLBTLPI2SD57P7R5E6JCBOENATL3DVRFA/representations/metadataRecord/versions/3ef665b0-b933-11ee-8000-4e008e54a287/files/dceef4b7-d9c1-3632-8715-34301a7c7851","throttleLevel":"MEDIUM", "taskId":"123", "outputDataset":"02749bdb-eaac-4794-98cd-ebdd6de1ce45"}
