@@ -1,7 +1,7 @@
 package eu.europeana.cloud.topologies;
 
-import eu.europeana.cloud.dto.MessageSerde;
-import eu.europeana.cloud.processors.*;
+import eu.europeana.cloud.processors.mediaProcessors.*;
+import eu.europeana.cloud.serdes.MessageSerde;
 import eu.europeana.cloud.suppliers.NotificationProcessorSupplier;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;

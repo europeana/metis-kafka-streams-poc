@@ -1,10 +1,10 @@
-package eu.europeana.cloud.processors;
+package eu.europeana.cloud.processors.mediaProcessors;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import eu.europeana.cloud.common.model.Representation;
 import eu.europeana.cloud.commons.TopologyMetadataPropertyKeys;
-import eu.europeana.cloud.dto.ErrorInformation;
-import eu.europeana.cloud.dto.Message;
+import eu.europeana.cloud.dto.queues.ErrorInformation;
+import eu.europeana.cloud.dto.queues.Message;
 import eu.europeana.cloud.service.dps.storm.utils.UUIDWrapper;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;

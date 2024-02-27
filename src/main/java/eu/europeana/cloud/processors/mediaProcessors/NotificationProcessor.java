@@ -1,6 +1,6 @@
-package eu.europeana.cloud.processors;
+package eu.europeana.cloud.processors.mediaProcessors;
 
-import eu.europeana.cloud.dto.Message;
+import eu.europeana.cloud.dto.queues.Message;
 import eu.europeana.cloud.suppliers.NotificationProcessorSupplier;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.processor.PunctuationType;

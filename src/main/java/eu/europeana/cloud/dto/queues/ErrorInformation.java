@@ -1,4 +1,4 @@
-package eu.europeana.cloud.dto;
+package eu.europeana.cloud.dto.queues;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

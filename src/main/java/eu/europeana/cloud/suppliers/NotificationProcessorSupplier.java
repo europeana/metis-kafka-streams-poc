@@ -1,7 +1,7 @@
 package eu.europeana.cloud.suppliers;
 
-import eu.europeana.cloud.dto.Message;
-import eu.europeana.cloud.processors.NotificationProcessor;
+import eu.europeana.cloud.dto.queues.Message;
+import eu.europeana.cloud.processors.mediaProcessors.NotificationProcessor;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorSupplier;

@@ -1,4 +1,4 @@
-package eu.europeana.cloud.processors;
+package eu.europeana.cloud.processors.mediaProcessors;
 
 import com.google.gson.Gson;
 import eu.europeana.cloud.cassandra.CassandraConnectionProvider;
@@ -44,7 +44,7 @@ public class MediaProcessor {
                     .awsEndPoint(topologyProperties.getProperty(TopologyPropertyKeys.AWS_CREDENTIALS_ENDPOINT))
                     .awsSecretKey(topologyProperties.getProperty(TopologyPropertyKeys.AWS_CREDENTIALS_SECRETKEY))
                     .build();
-            amazonClient.init();
+            //amazonClient.init();
             cassandraConnectionProvider = new CassandraConnectionProvider(
                     topologyProperties.getProperty(TopologyPropertyKeys.CASSANDRA_HOSTS),
                     Integer.parseInt(topologyProperties.getProperty(TopologyPropertyKeys.CASSANDRA_PORT)),

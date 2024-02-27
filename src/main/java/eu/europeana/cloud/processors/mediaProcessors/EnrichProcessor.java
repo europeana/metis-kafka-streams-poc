@@ -1,10 +1,10 @@
-package eu.europeana.cloud.processors;
+package eu.europeana.cloud.processors.mediaProcessors;
 
 import com.google.gson.reflect.TypeToken;
 import eu.europeana.cloud.commons.TopologyMetadataPropertyKeys;
 import eu.europeana.cloud.commons.TopologyNodeNames;
-import eu.europeana.cloud.dto.ErrorInformation;
-import eu.europeana.cloud.dto.Message;
+import eu.europeana.cloud.dto.queues.ErrorInformation;
+import eu.europeana.cloud.dto.queues.Message;
 import eu.europeana.cloud.service.commons.urls.UrlParser;
 import eu.europeana.metis.mediaprocessing.exception.RdfDeserializationException;
 import eu.europeana.metis.mediaprocessing.exception.RdfSerializationException;
