@@ -31,6 +31,12 @@ public class TopologyNodeNames {
     public static final String VALIDATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "validation-database-transfer-execution-results-sink";
     public static final String VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "validation-database-transfer-execution-exception-sink";
 
+
+    public static final String TRANSFORMATION_TOPOLOGY_SOURCE_NAME = "transformation-source";
+    public static final String TRANSFORMATION_PROCESSOR_NAME = "transformation-processor";
+    public static final String TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "transformation-database-transfer-execution-results-sink";
+    public static final String TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "transformation-database-transfer-execution-exception-sink";
+
     private TopologyNodeNames() {
     }
 }
