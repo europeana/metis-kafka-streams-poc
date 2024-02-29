@@ -26,6 +26,11 @@ public class TopologyNodeNames {
     public static final String OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "oai-harvest-database-transfer-execution-results-sink";
     public static final String OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "oai-harvest-database-transfer-execution-exception-sink";
 
+    public static final String VALIDATION_TOPOLOGY_SOURCE_NAME = "validation-source";
+    public static final String VALIDATION_PROCESSOR_NAME = "validation-processor";
+    public static final String VALIDATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "validation-database-transfer-execution-results-sink";
+    public static final String VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "validation-database-transfer-execution-exception-sink";
+
     private TopologyNodeNames() {
     }
 }

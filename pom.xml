@@ -105,5 +105,10 @@
             <artifactId>metis-transformation-service</artifactId>
             <version>${version.metis}</version>
         </dependency>
+        <dependency>
+            <groupId>eu.europeana.metis</groupId>
+            <artifactId>metis-validation-service</artifactId>
+            <version>${version.metis}</version>
+        </dependency>
     </dependencies>
 </project>
