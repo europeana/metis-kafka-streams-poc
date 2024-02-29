@@ -22,6 +22,11 @@ public class TopologyPropertyKeys {
 
     public static final String KAFKA_HOSTS = "KAFKA_HOSTS";
 
+    public static final String DEREFERENCE_SERVICE_URL = "DEREFERENCE_SERVICE_URL";
+    public static final String ENTITY_MANAGEMENT_URL = "ENTITY_MANAGEMENT_URL";
+    public static final String ENTITY_API_URL = "ENTITY_API_URL";
+    public static final String ENTITY_API_KEY = "ENTITY_API_KEY";
+
     private TopologyPropertyKeys() {
     }
 }

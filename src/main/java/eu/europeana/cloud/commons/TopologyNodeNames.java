@@ -42,6 +42,11 @@ public class TopologyNodeNames {
     public static final String NORMALIZATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "normalization-database-transfer-execution-results-sink";
     public static final String NORMALIZATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "normalization-database-transfer-execution-exception-sink";
 
+    public static final String ENRICHMENT_TOPOLOGY_SOURCE_NAME = "enrichment-source";
+    public static final String ENRICHMENT_PROCESSOR_NAME = "enrichment-processor";
+    public static final String ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "enrichment-database-transfer-execution-results-sink";
+    public static final String ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "enrichment-database-transfer-execution-exception-sink";
+
     private TopologyNodeNames() {
     }
 }
