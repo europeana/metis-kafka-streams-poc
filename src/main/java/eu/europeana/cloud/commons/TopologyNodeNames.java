@@ -37,6 +37,11 @@ public class TopologyNodeNames {
     public static final String TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "transformation-database-transfer-execution-results-sink";
     public static final String TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "transformation-database-transfer-execution-exception-sink";
 
+    public static final String NORMALIZATION_TOPOLOGY_SOURCE_NAME = "normalization-source";
+    public static final String NORMALIZATION_PROCESSOR_NAME = "normalization-processor";
+    public static final String NORMALIZATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "normalization-database-transfer-execution-results-sink";
+    public static final String NORMALIZATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "normalization-database-transfer-execution-exception-sink";
+
     private TopologyNodeNames() {
     }
 }
