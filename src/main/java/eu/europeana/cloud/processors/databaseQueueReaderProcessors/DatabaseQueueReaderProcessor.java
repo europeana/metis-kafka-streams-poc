@@ -27,27 +27,27 @@ public class DatabaseQueueReaderProcessor implements Processor<RecordExecutionKe
         switch (record.value().getExecutionName()) {
             case OAI_TOPOLOGY_NAME -> {
                 LOGGER.info("Received oai topology record. key : {} value: {}", record.key(), record.value());
-                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_QUEUE_READER_OAI_HARVEST_SINK_NAME);
+                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_TRANSFER_OAI_HARVEST_SINK_NAME);
             }
             case MEDIA_TOPOLOGY_NAME -> {
                 LOGGER.info("Received media topology record. key : {} value: {}", record.key(), record.value());
-                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_QUEUE_READER_MEDIA_SINK_NAME);
+                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_TRANSFER_MEDIA_SINK_NAME);
             }
             case VALIDATION_TOPOLOGY_NAME -> {
                 LOGGER.info("Received validation topology record. key : {} value: {}", record.key(), record.value());
-                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_QUEUE_READER_VALIDATION_SINK_NAME);
+                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_TRANSFER_VALIDATION_SINK_NAME);
             }
             case NORMALIZATION_TOPOLOGY_NAME -> {
                 LOGGER.info("Received normalization topology record. key : {} value: {}", record.key(), record.value());
-                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_QUEUE_READER_NORMALIZATION_SINK_NAME);
+                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_TRANSFER_NORMALIZATION_SINK_NAME);
             }
             case ENRICHMENT_TOPOLOGY_NAME -> {
                 LOGGER.info("Received enrichment topology record. key : {} value: {}", record.key(), record.value());
-                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_QUEUE_READER_ENRICHMENT_SINK_NAME);
+                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_TRANSFER_ENRICHMENT_SINK_NAME);
             }
             case TRANSFORMATION_TOPOLOGY_NAME -> {
                 LOGGER.info("Received transformation topology record. key : {} value: {}", record.key(), record.value());
-                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_QUEUE_READER_TRANSFORMATION_SINK_NAME);
+                context.forward(new Record<>(record.key(), record.value(), record.timestamp()), DATABASE_TRANSFER_TRANSFORMATION_SINK_NAME);
             }
             default ->
                     LOGGER.warn("Received unknown topology record. key : {} value: {}", record.key(), record.value());

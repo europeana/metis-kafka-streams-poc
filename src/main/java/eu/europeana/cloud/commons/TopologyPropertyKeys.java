@@ -13,4 +13,15 @@ public class TopologyPropertyKeys {
     public static final String AWS_CREDENTIALS_SECRETKEY = "AWS_CREDENTIALS_SECRETKEY";
     public static final String AWS_CREDENTIALS_ENDPOINT = "AWS_CREDENTIALS_ENDPOINT";
     public static final String AWS_CREDENTIALS_BUCKET = "AWS_CREDENTIALS_BUCKET";
+
+    public static final String DATABASE_NAME = "DB_NAME";
+    public static final String DATABASE_USER = "DB_USER";
+    public static final String DATABASE_PASSWORD = "DB_PASSWORD";
+    public static final String DATABASE_HOST = "DB_ADDRESS";
+    public static final String DATABASE_PORT = "DB_PORT";
+
+    public static final String KAFKA_HOSTS = "KAFKA_HOSTS";
+
+    private TopologyPropertyKeys() {
+    }
 }

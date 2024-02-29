@@ -1,6 +1,9 @@
 package eu.europeana.cloud.commons;
 
 public class TopologyMetadataPropertyKeys {
+    private TopologyMetadataPropertyKeys() {
+    }
+
     public static final String MAIN_ENTRY_URL = "MAIN_ENTRY_URL";
     public static final String REST_ENTRIES_URL = "REST_ENTRIES_URL";
     public static final String MAIN_ENTRY_METADATA = "MAIN_ENTRY_METADATA";

@@ -10,7 +10,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @AllArgsConstructor
-public class RecordExecutionException {
+public class RecordExecutionException extends RecordExecutionProduct {
     @SerializedName("execution_name")
     private String executionName;
     @SerializedName("exception_name")

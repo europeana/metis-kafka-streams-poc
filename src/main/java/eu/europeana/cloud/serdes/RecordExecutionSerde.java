@@ -1,7 +1,6 @@
 package eu.europeana.cloud.serdes;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import eu.europeana.cloud.dto.database.RecordExecution;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -21,7 +20,27 @@ public class RecordExecutionSerde implements Serde<RecordExecution>, Serializer<
         if (bytes == null)
             return null;
         try {
-            return gson.fromJson(new String(bytes, StandardCharsets.UTF_8), RecordExecution.class);
+            String json = new String(bytes, StandardCharsets.UTF_8);
+            Map<String, JsonElement> jsonElementMap = JsonParser.parseString(json).getAsJsonObject().asMap();
+
+            RecordExecution recordExecution = new RecordExecution();
+
+            jsonElementMap.forEach((key, value) -> {
+                switch (key) {
+                    case "record_data" -> recordExecution.setRecordData(value.getAsString());
+                    case "execution_name" -> recordExecution.setExecutionName(value.getAsString());
+                    case "execution_parameters" -> {
+                        JsonObject executionParameters = null;
+                        if (value.isJsonPrimitive()) {
+                            executionParameters = gson.fromJson(value.getAsString(), JsonObject.class);
+                        } else if (value.isJsonObject()) {
+                            executionParameters = value.getAsJsonObject();
+                        }
+                        recordExecution.setExecutionParameters(executionParameters);
+                    }
+                }
+            });
+            return recordExecution;
         } catch (Exception e) {
             throw new SerializationException("Error deserializing message", e);
         }
@@ -50,7 +69,7 @@ public class RecordExecutionSerde implements Serde<RecordExecution>, Serializer<
     @Override
     public byte[] serialize(String s, RecordExecution recordExecution) {
         if (recordExecution == null)
-            return null;
+            return new byte[0];
 
         try {
             return gson.toJson(recordExecution).getBytes(StandardCharsets.UTF_8);

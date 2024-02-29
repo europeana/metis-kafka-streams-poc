@@ -12,8 +12,8 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.ecloud-version>12-SNAPSHOT</version.ecloud-version>
-        <version.metis-version>12-SNAPSHOT</version.metis-version>
+        <version.ecloud>12-SNAPSHOT</version.ecloud>
+        <version.metis>12-SNAPSHOT</version.metis>
     </properties>
 
     <repositories>
@@ -62,38 +62,48 @@
         <dependency>
             <groupId>eu.europeana.cloud</groupId>
             <artifactId>ecloud-service-dps-storm-common</artifactId>
-            <version>${version.ecloud-version}</version>
+            <version>${version.ecloud}</version>
         </dependency>
         <dependency>
             <groupId>eu.europeana.cloud</groupId>
             <artifactId>ecloud-service-dps-storm-common</artifactId>
-            <version>${version.ecloud-version}</version>
+            <version>${version.ecloud}</version>
         </dependency>
         <dependency>
             <groupId>eu.europeana.cloud</groupId>
             <artifactId>ecloud-service-dps-storm-topologies-media-service</artifactId>
-            <version>${version.ecloud-version}</version>
+            <version>${version.ecloud}</version>
         </dependency>
         <dependency>
             <groupId>eu.europeana.cloud</groupId>
             <artifactId>ecloud-service-mcs-rest-client-java</artifactId>
-            <version>${version.ecloud-version}</version>
+            <version>${version.ecloud}</version>
         </dependency>
         <dependency>
             <groupId>eu.europeana.cloud</groupId>
             <artifactId>ecloud-service-commons</artifactId>
-            <version>${version.ecloud-version}</version>
+            <version>${version.ecloud}</version>
         </dependency>
         <dependency>
             <groupId>eu.europeana.metis</groupId>
             <artifactId>metis-media-service</artifactId>
-            <version>${version.metis-version}</version>
+            <version>${version.metis}</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons.io</groupId>
                     <artifactId>commons.io</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>eu.europeana.metis</groupId>
+            <artifactId>metis-harvesting</artifactId>
+            <version>${version.metis}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.europeana.metis</groupId>
+            <artifactId>metis-transformation-service</artifactId>
+            <version>${version.metis}</version>
         </dependency>
     </dependencies>
 </project>

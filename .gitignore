@@ -17,7 +17,7 @@ solr/custom/overlays/
 /ecloud-parent.ipr
 /ecloud-parent.iws
 
-mediaTopology.properties
+*.properties
 
 create_changelog.sh
 /logs

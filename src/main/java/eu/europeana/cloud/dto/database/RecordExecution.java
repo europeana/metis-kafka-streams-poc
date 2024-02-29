@@ -1,18 +1,21 @@
 package eu.europeana.cloud.dto.database;
 
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+
 
 @Setter
 @Getter
 @ToString
 @AllArgsConstructor
-public class RecordExecution {
+@NoArgsConstructor
+public class RecordExecution extends RecordExecutionProduct {
     @SerializedName("record_data")
     private String recordData;
     @SerializedName("execution_name")
     private String executionName;
+    @SerializedName("execution_parameters")
+    private JsonObject executionParameters;
+
 }

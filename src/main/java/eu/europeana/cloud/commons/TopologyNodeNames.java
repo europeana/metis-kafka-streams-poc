@@ -10,13 +10,22 @@ public class TopologyNodeNames {
     public static final String MEDIA_INTERMEDIATE_SINK_NAME = "media-output";
     public static final String MEDIA_NOTIFICATION_SOURCE_NAME = "notification-input";
     public static final String MEDIA_NOTIFICATION_PROCESSOR_NAME = "notification-node";
-    public static final String DATABASE_QUEUE_READER_SOURCE_NAME = "database-queue-source";
-    public static final String DATABASE_QUEUE_READER_PROCESSOR_NAME = "database-queue-processor";
-    public static final String DATABASE_QUEUE_READER_OAI_HARVEST_SINK_NAME = "database-harvest-sink";
-    public static final String DATABASE_QUEUE_READER_MEDIA_SINK_NAME = "database-media-sink";
-    public static final String DATABASE_QUEUE_READER_VALIDATION_SINK_NAME = "database-validation-sink";
 
-    public static final String DATABASE_QUEUE_READER_NORMALIZATION_SINK_NAME = "database-normalization-sink";
-    public static final String DATABASE_QUEUE_READER_TRANSFORMATION_SINK_NAME = "database-transformation-sink";
-    public static final String DATABASE_QUEUE_READER_ENRICHMENT_SINK_NAME = "database-enrichment-sink";
+    public static final String DATABASE_TRANSFER_SOURCE_NAME = "database-queue-source";
+    public static final String DATABASE_TRANSFER_PROCESSOR_NAME = "database-queue-processor";
+    public static final String DATABASE_TRANSFER_OAI_HARVEST_SINK_NAME = "database-harvest-sink";
+    public static final String DATABASE_TRANSFER_MEDIA_SINK_NAME = "database-media-sink";
+    public static final String DATABASE_TRANSFER_VALIDATION_SINK_NAME = "database-validation-sink";
+    public static final String DATABASE_TRANSFER_NORMALIZATION_SINK_NAME = "database-normalization-sink";
+    public static final String DATABASE_TRANSFER_TRANSFORMATION_SINK_NAME = "database-transformation-sink";
+    public static final String DATABASE_TRANSFER_ENRICHMENT_SINK_NAME = "database-enrichment-sink";
+
+    public static final String OAI_HARVEST_TOPOLOGY_SOURCE_NAME = "oai-harvest-source";
+    public static final String OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME = "oai-header-extractor";
+    public static final String OAI_HARVEST_HARVESTER_PROCESSOR_NAME = "oai-harvester";
+    public static final String OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "oai-harvest-database-transfer-execution-results-sink";
+    public static final String OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "oai-harvest-database-transfer-execution-exception-sink";
+
+    private TopologyNodeNames() {
+    }
 }

@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS record_execution
     255
 ) NOT NULL,
     record_data TEXT NOT NULL,
+    execution_parameters JSON,
     PRIMARY KEY
 (
     dataset_id,

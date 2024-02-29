@@ -2,7 +2,7 @@ package eu.europeana.cloud.serdes;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import eu.europeana.cloud.dto.database.RecordExecutionKey;
+import eu.europeana.cloud.dto.database.RecordExecutionResult;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
@@ -11,17 +11,15 @@ import org.apache.kafka.common.serialization.Serializer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class RecordExecutionKeySerde implements Serde<RecordExecutionKey>, Serializer<RecordExecutionKey>, Deserializer<RecordExecutionKey> {
-
-
+public class RecordExecutionResultSerde implements Serde<RecordExecutionResult>, Serializer<RecordExecutionResult>, Deserializer<RecordExecutionResult> {
     private final Gson gson = new GsonBuilder().create();
 
     @Override
-    public RecordExecutionKey deserialize(String s, byte[] bytes) {
+    public RecordExecutionResult deserialize(String s, byte[] bytes) {
         if (bytes == null)
             return null;
         try {
-            return gson.fromJson(new String(bytes, StandardCharsets.UTF_8), RecordExecutionKey.class);
+            return gson.fromJson(new String(bytes, StandardCharsets.UTF_8), RecordExecutionResult.class);
         } catch (Exception e) {
             throw new SerializationException("Error deserializing message", e);
         }
@@ -38,22 +36,22 @@ public class RecordExecutionKeySerde implements Serde<RecordExecutionKey>, Seria
     }
 
     @Override
-    public Serializer<RecordExecutionKey> serializer() {
+    public Serializer<RecordExecutionResult> serializer() {
         return this;
     }
 
     @Override
-    public Deserializer<RecordExecutionKey> deserializer() {
+    public Deserializer<RecordExecutionResult> deserializer() {
         return this;
     }
 
     @Override
-    public byte[] serialize(String s, RecordExecutionKey recordExecutionKey) {
-        if (recordExecutionKey == null)
+    public byte[] serialize(String s, RecordExecutionResult recordExecutionResult) {
+        if (recordExecutionResult == null)
             return new byte[0];
 
         try {
-            return gson.toJson(recordExecutionKey).getBytes(StandardCharsets.UTF_8);
+            return gson.toJson(recordExecutionResult).getBytes(StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new SerializationException("Error serializing JSON message", e);
         }

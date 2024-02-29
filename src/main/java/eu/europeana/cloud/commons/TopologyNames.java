@@ -7,4 +7,7 @@ public class TopologyNames {
     public static final String NORMALIZATION_TOPOLOGY_NAME = "normalization_topology";
     public static final String TRANSFORMATION_TOPOLOGY_NAME = "transformation_topology";
     public static final String ENRICHMENT_TOPOLOGY_NAME = "enrichment_topology";
+
+    private TopologyNames() {
+    }
 }
