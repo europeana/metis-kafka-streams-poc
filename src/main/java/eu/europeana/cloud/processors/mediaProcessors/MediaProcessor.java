@@ -1,6 +1,8 @@
 package eu.europeana.cloud.processors.mediaProcessors;
 
 import eu.europeana.cloud.dto.*;
+import eu.europeana.cloud.exceptions.TaskDroppedException;
+import eu.europeana.cloud.processors.commonProcessors.CommonProcessor;
 import eu.europeana.metis.mediaprocessing.*;
 import eu.europeana.metis.mediaprocessing.exception.MediaExtractionException;
 import eu.europeana.metis.mediaprocessing.exception.MediaProcessorException;
@@ -25,7 +27,7 @@ import static eu.europeana.cloud.commons.TopologyNodeNames.MEDIA_DATABASE_TRANSF
 import static eu.europeana.cloud.commons.TopologyNodeNames.MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME;
 import static java.util.Objects.nonNull;
 
-public class MediaProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
+public class MediaProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MediaProcessor.class);
     private final MediaExtractor mediaExtractor;
     private final RdfSerializer rdfSerializer;
@@ -33,6 +35,7 @@ public class MediaProcessor implements Processor<RecordExecutionKey, RecordExecu
     private ProcessorContext<RecordExecutionKey, RecordExecutionProduct> context;
 
     public MediaProcessor(Properties properties) {
+        super(properties);
         try {
             RdfConverterFactory rdfConverterFactory = new RdfConverterFactory();
             rdfDeserializer = rdfConverterFactory.createRdfDeserializer();
@@ -53,42 +56,49 @@ public class MediaProcessor implements Processor<RecordExecutionKey, RecordExecu
 
     @Override
     public void process(Record<RecordExecutionKey, RecordExecution> record) {
-        final byte[] rdfBytes = record.value().getRecordData().getBytes(StandardCharsets.UTF_8);
-        final EnrichedRdf enrichedRdf;
+        if (!isTaskDropped(record.key().getExecutionId())) {
+            final byte[] rdfBytes = record.value().getRecordData().getBytes(StandardCharsets.UTF_8);
+            final EnrichedRdf enrichedRdf;
 
-        try {
-            enrichedRdf = getEnrichedRdf(rdfBytes);
+            try {
+                enrichedRdf = getEnrichedRdf(rdfBytes);
 
-            RdfResourceEntry resourceMainThumbnail;
-            resourceMainThumbnail = rdfDeserializer.getMainThumbnailResourceForMediaExtraction(rdfBytes);
+                RdfResourceEntry resourceMainThumbnail;
+                resourceMainThumbnail = rdfDeserializer.getMainThumbnailResourceForMediaExtraction(rdfBytes);
 
-            boolean hasMainThumbnail = false;
-            if (resourceMainThumbnail != null) {
-                LOGGER.info("Processed record contain main thumbnail: {}", resourceMainThumbnail.getResourceUrl());
-                hasMainThumbnail = processResourceWithoutThumbnail(resourceMainThumbnail,
-                        record.key().getRecordId(), enrichedRdf, mediaExtractor);
+                boolean hasMainThumbnail = false;
+                if (resourceMainThumbnail != null) {
+                    LOGGER.info("Processed record contain main thumbnail: {}", resourceMainThumbnail.getResourceUrl());
+                    hasMainThumbnail = processResourceWithoutThumbnail(resourceMainThumbnail,
+                            record.key().getRecordId(), enrichedRdf, mediaExtractor);
+                }
+                List<RdfResourceEntry> remainingResourcesList;
+                remainingResourcesList = rdfDeserializer.getRemainingResourcesForMediaExtraction(rdfBytes);
+                if (hasMainThumbnail) {
+                    remainingResourcesList.forEach(entry ->
+                            processResourceWithThumbnail(entry, record.key().getRecordId(), enrichedRdf,
+                                    mediaExtractor)
+                    );
+                } else {
+                    remainingResourcesList.forEach(entry ->
+                            processResourceWithoutThumbnail(entry, record.key().getRecordId(), enrichedRdf,
+                                    mediaExtractor)
+                    );
+                }
+                String resultFileData = new String(getOutputRdf(enrichedRdf), StandardCharsets.UTF_8);
+                context.forward(new Record<>(record.key(),
+                        new RecordExecutionResult(resultFileData, record.value().getExecutionName()),
+                        record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+            } catch (RdfDeserializationException | RdfSerializationException e) {
+                LOGGER.warn("Exception during enrichment of record: key:{}, Exception e: {}", record.key(), e);
+                context.forward(new Record<>(record.key(),
+                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+                        record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
             }
-            List<RdfResourceEntry> remainingResourcesList;
-            remainingResourcesList = rdfDeserializer.getRemainingResourcesForMediaExtraction(rdfBytes);
-            if (hasMainThumbnail) {
-                remainingResourcesList.forEach(entry ->
-                        processResourceWithThumbnail(entry, record.key().getRecordId(), enrichedRdf,
-                                mediaExtractor)
-                );
-            } else {
-                remainingResourcesList.forEach(entry ->
-                        processResourceWithoutThumbnail(entry, record.key().getRecordId(), enrichedRdf,
-                                mediaExtractor)
-                );
-            }
-            String resultFileData = new String(getOutputRdf(enrichedRdf), StandardCharsets.UTF_8);
+        } else {
+            LOGGER.warn("Task was dropped: key:{}", record.key());
             context.forward(new Record<>(record.key(),
-                    new RecordExecutionResult(resultFileData, record.value().getExecutionName()),
-                    record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
-        } catch (RdfDeserializationException | RdfSerializationException e) {
-            LOGGER.warn("Exception during enrichment of record: key:{}, Exception e: {}", record.key(), e);
-            context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
                     record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
         }
     }

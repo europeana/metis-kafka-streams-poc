@@ -2,6 +2,8 @@ package eu.europeana.cloud.processors.validationProcessors;
 
 import com.google.gson.JsonObject;
 import eu.europeana.cloud.dto.*;
+import eu.europeana.cloud.exceptions.TaskDroppedException;
+import eu.europeana.cloud.processors.commonProcessors.CommonProcessor;
 import eu.europeana.metis.transformation.service.TransformationException;
 import eu.europeana.metis.transformation.service.XsltTransformer;
 import eu.europeana.validation.model.ValidationResult;
@@ -19,12 +21,16 @@ import java.util.Properties;
 import static eu.europeana.cloud.commons.ExecutionPropertyKeys.VALIDATION_SUB_TYPE;
 import static eu.europeana.cloud.commons.TopologyNodeNames.VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
 
-public class ValidationProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
+public class ValidationProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidationProcessor.class);
     private static final String EDM_SORTER_FILE_URL = "http://ftp.eanadev.org/schema_zips/edm_sorter_20230809.xsl";
     private final Properties properties = new Properties();
     private XsltTransformer xsltTransformer;
     private ProcessorContext<RecordExecutionKey, RecordExecutionProduct> context;
+
+    public ValidationProcessor(Properties properties) {
+        super(properties);
+    }
 
 
     @Override
@@ -36,53 +42,59 @@ public class ValidationProcessor implements Processor<RecordExecutionKey, Record
 
     @Override
     public void process(Record<RecordExecutionKey, RecordExecution> record) {
-        LOGGER.info("Received validation topology record. key : {} value: {}", record.key(), record.value());
-        JsonObject executionParameters = record.value().getExecutionParameters();
-        String validationType;
-        if (executionParameters.get(VALIDATION_SUB_TYPE) == null) {
-            validationType = "external";
-        } else {
-            validationType = executionParameters.get(VALIDATION_SUB_TYPE).getAsString();
-        }
-        String schema, rootFileLocation, schematronFileLocation;
-        switch (validationType) {
-            case "external" -> {
-                schema = properties.getProperty("predefinedSchemas.edm-external.url");
-                rootFileLocation = properties.getProperty("predefinedSchemas.edm-external.rootLocation");
-                schematronFileLocation = properties.getProperty("predefinedSchemas.edm-external.schematronLocation");
-            }
-            case "internal" -> {
-                schema = properties.getProperty("predefinedSchemas.edm-internal.url");
-                rootFileLocation = properties.getProperty("predefinedSchemas.edm-internal.rootLocation");
-                schematronFileLocation = properties.getProperty("predefinedSchemas.edm-internal.schematronLocation");
-            }
-            default -> throw new IllegalStateException("Unexpected validation type: " + validationType);
-        }
-
-        ValidationExecutionService validationService = new ValidationExecutionService(properties);
-        try {
-            xsltTransformer = new XsltTransformer(EDM_SORTER_FILE_URL);
-            StringWriter writer = xsltTransformer.transform(record.value().getRecordData().getBytes(StandardCharsets.UTF_8), null);
-            ValidationResult validationResult = validationService.singleValidation(schema, rootFileLocation, schematronFileLocation, writer.toString());
-            if (validationResult.isSuccess()) {
-                LOGGER.info("Validation success for record: key:{} value:{}", record.key(), record.value());
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionResult(record.value().getRecordData(), record.value().getExecutionName()),
-                        record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+        if (!isTaskDropped(record.key().getExecutionId())) {
+            LOGGER.info("Received validation topology record. key : {} value: {}", record.key(), record.value());
+            JsonObject executionParameters = record.value().getExecutionParameters();
+            String validationType;
+            if (executionParameters.get(VALIDATION_SUB_TYPE) == null) {
+                validationType = "external";
             } else {
-                LOGGER.info("Validation failure for record: key:{} value:{}", record.key(), record.value());
+                validationType = executionParameters.get(VALIDATION_SUB_TYPE).getAsString();
+            }
+            String schema, rootFileLocation, schematronFileLocation;
+            switch (validationType) {
+                case "external" -> {
+                    schema = properties.getProperty("predefinedSchemas.edm-external.url");
+                    rootFileLocation = properties.getProperty("predefinedSchemas.edm-external.rootLocation");
+                    schematronFileLocation = properties.getProperty("predefinedSchemas.edm-external.schematronLocation");
+                }
+                case "internal" -> {
+                    schema = properties.getProperty("predefinedSchemas.edm-internal.url");
+                    rootFileLocation = properties.getProperty("predefinedSchemas.edm-internal.rootLocation");
+                    schematronFileLocation = properties.getProperty("predefinedSchemas.edm-internal.schematronLocation");
+                }
+                default -> throw new IllegalStateException("Unexpected validation type: " + validationType);
+            }
+
+            ValidationExecutionService validationService = new ValidationExecutionService(properties);
+            try {
+                xsltTransformer = new XsltTransformer(EDM_SORTER_FILE_URL);
+                StringWriter writer = xsltTransformer.transform(record.value().getRecordData().getBytes(StandardCharsets.UTF_8), null);
+                ValidationResult validationResult = validationService.singleValidation(schema, rootFileLocation, schematronFileLocation, writer.toString());
+                if (validationResult.isSuccess()) {
+                    LOGGER.info("Validation success for record: key:{} value:{}", record.key(), record.value());
+                    context.forward(new Record<>(record.key(),
+                            new RecordExecutionResult(record.value().getRecordData(), record.value().getExecutionName()),
+                            record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                } else {
+                    LOGGER.info("Validation failure for record: key:{} value:{}", record.key(), record.value());
+                    context.forward(new Record<>(record.key(),
+                            new RecordExecutionException(record.value().getExecutionName(), "ValidationFailureException", validationResult.getMessage()),
+                            record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                }
+            } catch (TransformationException e) {
+                LOGGER.info("Exception occurred during validation for record: key:{} value:{}", record.key(), record.value());
                 context.forward(new Record<>(record.key(),
-                        new RecordExecutionException(record.value().getExecutionName(), "ValidationFailureException", validationResult.getMessage()),
+                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
                         record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
             }
-        } catch (TransformationException e) {
-            LOGGER.info("Exception occurred during validation for record: key:{} value:{}", record.key(), record.value());
+
+        } else {
+            LOGGER.warn("Task was dropped: key:{}", record.key());
             context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
                     record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
         }
-
-
     }
 
 

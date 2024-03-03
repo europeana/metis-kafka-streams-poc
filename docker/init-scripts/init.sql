@@ -29,6 +29,23 @@ CREATE TABLE IF NOT EXISTS record_execution
 ) -- Define a composite primary key
     );
 
+CREATE TABLE IF NOT EXISTS execution_status
+(
+    execution_id VARCHAR
+(
+    255
+),
+    status VARCHAR
+(
+    255
+),
+    PRIMARY KEY
+(
+    execution_id
+)
+    );
+
+
 -- Create table record_execution_exception with a foreign key reference to record_execution
 CREATE TABLE IF NOT EXISTS record_execution_exception
 (

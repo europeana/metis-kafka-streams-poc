@@ -2,6 +2,8 @@ package eu.europeana.cloud.processors.enrichmentProcessors;
 
 import eu.europeana.cloud.commons.TopologyPropertyKeys;
 import eu.europeana.cloud.dto.*;
+import eu.europeana.cloud.exceptions.TaskDroppedException;
+import eu.europeana.cloud.processors.commonProcessors.CommonProcessor;
 import eu.europeana.enrichment.rest.client.EnrichmentWorker;
 import eu.europeana.enrichment.rest.client.EnrichmentWorkerImpl;
 import eu.europeana.enrichment.rest.client.dereference.DereferencerProvider;
@@ -24,12 +26,13 @@ import java.util.stream.Collectors;
 import static eu.europeana.cloud.commons.TopologyNodeNames.ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
 import static eu.europeana.cloud.commons.TopologyNodeNames.ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME;
 
-public class EnrichmentProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
+public class EnrichmentProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnrichmentProcessor.class);
     private final EnrichmentWorker enrichmentWorker;
     private ProcessorContext<RecordExecutionKey, RecordExecutionProduct> context;
 
     public EnrichmentProcessor(Properties enrichmentProperties) {
+        super(enrichmentProperties);
         String dereferenceURL = enrichmentProperties.getProperty(TopologyPropertyKeys.DEREFERENCE_SERVICE_URL);
         String enrichmentEntityApiKey = enrichmentProperties.getProperty(TopologyPropertyKeys.ENTITY_API_KEY);
         String enrichmentEntityManagementUrl = enrichmentProperties.getProperty(TopologyPropertyKeys.ENTITY_MANAGEMENT_URL);
@@ -55,21 +58,27 @@ public class EnrichmentProcessor implements Processor<RecordExecutionKey, Record
 
     @Override
     public void process(Record<RecordExecutionKey, RecordExecution> record) {
-        ProcessedResult<String> results = enrichmentWorker.process(record.value().getRecordData());
-        if (results.getRecordStatus() == ProcessedResult.RecordStatus.CONTINUE) {
-            context.forward(new Record<>(record.key(),
-                    new RecordExecutionResult(results.getProcessedRecord(),
-                            record.value().getExecutionName()),
-                    record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+        if (!isTaskDropped(record.key().getExecutionId())) {
+            ProcessedResult<String> results = enrichmentWorker.process(record.value().getRecordData());
+            if (results.getRecordStatus() == ProcessedResult.RecordStatus.CONTINUE) {
+                context.forward(new Record<>(record.key(),
+                        new RecordExecutionResult(results.getProcessedRecord(),
+                                record.value().getExecutionName()),
+                        record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+            } else {
+                Set<Report> enrichmentErrorReports = results.getReport().stream().filter(report -> report.getMessageType() == Type.ERROR).collect(Collectors.toSet());
+                String errorReportContent = enrichmentErrorReports.stream().map(Report::getMessage).collect(Collectors.joining("\n"));
+                LOGGER.warn("Enrichment ended with error for record: key:{}, Reports: {}", record.key(), results.getReport());
+                context.forward(new Record<>(record.key(),
+                        new RecordExecutionException(record.value().getExecutionName(), EnrichmentException.class.getName(), errorReportContent),
+                        record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+            }
         } else {
-            Set<Report> enrichmentErrorReports = results.getReport().stream().filter(report -> report.getMessageType() == Type.ERROR).collect(Collectors.toSet());
-            String errorReportContent = enrichmentErrorReports.stream().map(Report::getMessage).collect(Collectors.joining("\n"));
-            LOGGER.warn("Enrichment ended with error for record: key:{}, Reports: {}", record.key(), results.getReport());
+            LOGGER.warn("Task was dropped: key:{}", record.key());
             context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), EnrichmentException.class.getName(), errorReportContent),
+                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
                     record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
         }
-
     }
 
     @Override

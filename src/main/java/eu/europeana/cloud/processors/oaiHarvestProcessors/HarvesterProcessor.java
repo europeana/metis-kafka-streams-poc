@@ -3,6 +3,8 @@ package eu.europeana.cloud.processors.oaiHarvestProcessors;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import eu.europeana.cloud.dto.*;
+import eu.europeana.cloud.exceptions.TaskDroppedException;
+import eu.europeana.cloud.processors.commonProcessors.CommonProcessor;
 import eu.europeana.metis.harvesting.HarvesterException;
 import eu.europeana.metis.harvesting.HarvesterFactory;
 import eu.europeana.metis.harvesting.oaipmh.OaiHarvest;
@@ -20,17 +22,22 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 import static eu.europeana.cloud.commons.ExecutionPropertyKeys.*;
 import static eu.europeana.cloud.commons.TopologyNodeNames.OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
 import static eu.europeana.cloud.commons.TopologyNodeNames.OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME;
 
-public class HarvesterProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
+public class HarvesterProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HarvesterProcessor.class);
     private final OaiHarvester oaiHarvester = HarvesterFactory.createOaiHarvester();
     private final Gson gson = new Gson();
     private ProcessorContext<RecordExecutionKey, RecordExecutionProduct> context;
+
+    public HarvesterProcessor(Properties properties) {
+        super(properties);
+    }
 
     @Override
     public void init(ProcessorContext<RecordExecutionKey, RecordExecutionProduct> context) {
@@ -40,31 +47,37 @@ public class HarvesterProcessor implements Processor<RecordExecutionKey, RecordE
 
     @Override
     public void process(Record<RecordExecutionKey, RecordExecution> record) {
-        LOGGER.info("Received oai topology record for harvesting. key : {} value: {}", record.key(), record.value());
-        JsonObject executionParameters = record.value().getExecutionParameters();
-        String oaiEndpoint = executionParameters.get(OAI_ENDPOINT_PROPERTY_KEY).getAsString();
-        String oaiMetadataPrefix = executionParameters.get(OAI_METADATA_PREFIX_PROPERTY_KEY).getAsString();
-        String oaiDataset = executionParameters.get(OAI_SET_PROPERTY_KEY).getAsString();
-        OaiHarvest oaiHarvest = new OaiHarvest(oaiEndpoint, oaiMetadataPrefix, oaiDataset);
-        OaiRecordHeader oaiRecordHeader = gson.fromJson(record.value().getRecordData(), OaiRecordHeader.class);
-        try {
-            OaiRecord oaiRecord = oaiHarvester.harvestRecord(oaiHarvest, oaiRecordHeader.getOaiIdentifier());
-            LOGGER.info("Harvested oai record. key : {} value: {}", record.key(), record.value());
-            RecordExecutionKey recordExecutionKey = record.key();
-            String resultData = new String(oaiRecord.getRecord().readAllBytes(), StandardCharsets.UTF_8);
-            recordExecutionKey.setRecordId(prepareEuropeanaGeneratedId(record, resultData));
-            context.forward(new Record<>(
-                    recordExecutionKey,
-                    new RecordExecutionResult(resultData, record.value().getExecutionName()),
-                    record.timestamp()), OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
-        } catch (HarvesterException | IOException | EuropeanaIdException e) {
-            LOGGER.warn("Error processing oai record. key : {} value: {}", record.key(), record.value(), e);
-            context.forward(new Record<>(
-                    record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+        if (!isTaskDropped(record.key().getExecutionId())) {
+            LOGGER.info("Received oai topology record for harvesting. key : {} value: {}", record.key(), record.value());
+            JsonObject executionParameters = record.value().getExecutionParameters();
+            String oaiEndpoint = executionParameters.get(OAI_ENDPOINT_PROPERTY_KEY).getAsString();
+            String oaiMetadataPrefix = executionParameters.get(OAI_METADATA_PREFIX_PROPERTY_KEY).getAsString();
+            String oaiDataset = executionParameters.get(OAI_SET_PROPERTY_KEY).getAsString();
+            OaiHarvest oaiHarvest = new OaiHarvest(oaiEndpoint, oaiMetadataPrefix, oaiDataset);
+            OaiRecordHeader oaiRecordHeader = gson.fromJson(record.value().getRecordData(), OaiRecordHeader.class);
+            try {
+                OaiRecord oaiRecord = oaiHarvester.harvestRecord(oaiHarvest, oaiRecordHeader.getOaiIdentifier());
+                LOGGER.info("Harvested oai record. key : {} value: {}", record.key(), record.value());
+                RecordExecutionKey recordExecutionKey = record.key();
+                String resultData = new String(oaiRecord.getRecord().readAllBytes(), StandardCharsets.UTF_8);
+                recordExecutionKey.setRecordId(prepareEuropeanaGeneratedId(record, resultData));
+                context.forward(new Record<>(
+                        recordExecutionKey,
+                        new RecordExecutionResult(resultData, record.value().getExecutionName()),
+                        record.timestamp()), OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+            } catch (HarvesterException | IOException | EuropeanaIdException e) {
+                LOGGER.warn("Error processing oai record. key : {} value: {}", record.key(), record.value(), e);
+                context.forward(new Record<>(
+                        record.key(),
+                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+                        record.timestamp()), OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+            }
+        } else {
+            LOGGER.warn("Task was dropped: key:{}", record.key());
+            context.forward(new Record<>(record.key(),
+                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
                     record.timestamp()), OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
         }
-
 
     }
 

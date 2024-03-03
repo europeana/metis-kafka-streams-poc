@@ -63,7 +63,7 @@ public class NormalizationTopology {
              RecordExecutionExceptionSerde recordExecutionExceptionSerde = new RecordExecutionExceptionSerde()
         ) {
             topology.addSource(NORMALIZATION_TOPOLOGY_SOURCE_NAME, recordExecutionKeySerde.deserializer(), recordExecutionSerde.deserializer(), NORMALIZATION_SOURCE_TOPIC_NAME);
-            topology.addProcessor(NORMALIZATION_PROCESSOR_NAME, NormalizationProcessor::new, NORMALIZATION_TOPOLOGY_SOURCE_NAME);
+            topology.addProcessor(NORMALIZATION_PROCESSOR_NAME, () -> new NormalizationProcessor(properties), NORMALIZATION_TOPOLOGY_SOURCE_NAME);
             topology.addSink(NORMALIZATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), NORMALIZATION_PROCESSOR_NAME);
             topology.addSink(NORMALIZATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
                     NORMALIZATION_PROCESSOR_NAME);

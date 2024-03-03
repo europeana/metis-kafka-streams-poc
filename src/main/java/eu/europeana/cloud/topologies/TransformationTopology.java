@@ -63,7 +63,7 @@ public class TransformationTopology {
              RecordExecutionExceptionSerde recordExecutionExceptionSerde = new RecordExecutionExceptionSerde()
         ) {
             topology.addSource(TRANSFORMATION_TOPOLOGY_SOURCE_NAME, recordExecutionKeySerde.deserializer(), recordExecutionSerde.deserializer(), TRANSFORMATION_SOURCE_TOPIC_NAME);
-            topology.addProcessor(TRANSFORMATION_PROCESSOR_NAME, TransformationProcessor::new, TRANSFORMATION_TOPOLOGY_SOURCE_NAME);
+            topology.addProcessor(TRANSFORMATION_PROCESSOR_NAME, () -> new TransformationProcessor(properties), TRANSFORMATION_TOPOLOGY_SOURCE_NAME);
             topology.addSink(TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), TRANSFORMATION_PROCESSOR_NAME);
             topology.addSink(TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
                     TRANSFORMATION_PROCESSOR_NAME);

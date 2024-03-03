@@ -64,8 +64,8 @@ public class OAIHarvestTopology {
              RecordExecutionExceptionSerde recordExecutionExceptionSerde = new RecordExecutionExceptionSerde()
         ) {
             topology.addSource(OAI_HARVEST_TOPOLOGY_SOURCE_NAME, recordExecutionKeySerde.deserializer(), recordExecutionSerde.deserializer(), OAI_HARVEST_SOURCE_TOPIC_NAME);
-            topology.addProcessor(OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME, HeaderExtractorProcessor::new, OAI_HARVEST_TOPOLOGY_SOURCE_NAME);
-            topology.addProcessor(OAI_HARVEST_HARVESTER_PROCESSOR_NAME, HarvesterProcessor::new, OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME);
+            topology.addProcessor(OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME, () -> new HeaderExtractorProcessor(properties), OAI_HARVEST_TOPOLOGY_SOURCE_NAME);
+            topology.addProcessor(OAI_HARVEST_HARVESTER_PROCESSOR_NAME, () -> new HarvesterProcessor(properties), OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME);
             topology.addSink(OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), OAI_HARVEST_HARVESTER_PROCESSOR_NAME);
             topology.addSink(OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
                     OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME, OAI_HARVEST_HARVESTER_PROCESSOR_NAME);

@@ -63,7 +63,7 @@ public class ValidationTopology {
              RecordExecutionExceptionSerde recordExecutionExceptionSerde = new RecordExecutionExceptionSerde()
         ) {
             topology.addSource(VALIDATION_TOPOLOGY_SOURCE_NAME, recordExecutionKeySerde.deserializer(), recordExecutionSerde.deserializer(), VALIDATION_SOURCE_TOPIC_NAME);
-            topology.addProcessor(VALIDATION_PROCESSOR_NAME, ValidationProcessor::new, VALIDATION_TOPOLOGY_SOURCE_NAME);
+            topology.addProcessor(VALIDATION_PROCESSOR_NAME, () -> new ValidationProcessor(properties), VALIDATION_TOPOLOGY_SOURCE_NAME);
             topology.addSink(VALIDATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), VALIDATION_PROCESSOR_NAME);
             topology.addSink(VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
                     VALIDATION_PROCESSOR_NAME);
