@@ -65,5 +65,6 @@ public class NormalizationProcessor extends CommonProcessor implements Processor
     @Override
     public void close() {
         Processor.super.close();
+        closeDatabaseConnection();
     }
 }

@@ -77,5 +77,6 @@ public class TransformationProcessor extends CommonProcessor implements Processo
     @Override
     public void close() {
         Processor.super.close();
+        closeDatabaseConnection();
     }
 }

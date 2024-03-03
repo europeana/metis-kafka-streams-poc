@@ -90,5 +90,6 @@ public class HarvesterProcessor extends CommonProcessor implements Processor<Rec
     @Override
     public void close() {
         Processor.super.close();
+        closeDatabaseConnection();
     }
 }

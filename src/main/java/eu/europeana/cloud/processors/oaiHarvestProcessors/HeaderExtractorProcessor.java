@@ -82,5 +82,6 @@ public class HeaderExtractorProcessor extends CommonProcessor implements Process
     @Override
     public void close() {
         Processor.super.close();
+        closeDatabaseConnection();
     }
 }

@@ -158,5 +158,6 @@ public class MediaProcessor extends CommonProcessor implements Processor<RecordE
     @Override
     public void close() {
         Processor.super.close();
+        closeDatabaseConnection();
     }
 }

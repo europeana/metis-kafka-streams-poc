@@ -45,4 +45,13 @@ public class CommonProcessor {
             throw new RuntimeException(e);
         }
     }
+
+    protected void closeDatabaseConnection() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            LOGGER.warn("Can't close database connection: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
 }

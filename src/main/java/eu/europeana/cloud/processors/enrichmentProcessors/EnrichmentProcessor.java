@@ -84,5 +84,6 @@ public class EnrichmentProcessor extends CommonProcessor implements Processor<Re
     @Override
     public void close() {
         Processor.super.close();
+        closeDatabaseConnection();
     }
 }
