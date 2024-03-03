@@ -1,8 +1,10 @@
 package eu.europeana.cloud.topologies;
 
-import eu.europeana.cloud.processors.mediaProcessors.*;
-import eu.europeana.cloud.serdes.MessageSerde;
-import eu.europeana.cloud.suppliers.NotificationProcessorSupplier;
+import eu.europeana.cloud.processors.mediaProcessors.MediaProcessor;
+import eu.europeana.cloud.serdes.RecordExecutionExceptionSerde;
+import eu.europeana.cloud.serdes.RecordExecutionKeySerde;
+import eu.europeana.cloud.serdes.RecordExecutionResultSerde;
+import eu.europeana.cloud.serdes.RecordExecutionSerde;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -18,8 +20,8 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import static eu.europeana.cloud.commons.TopologyNodeNames.*;
-import static eu.europeana.cloud.commons.TopologyTopicNames.MEDIA_INPUT_TOPIC_NAME;
-import static eu.europeana.cloud.commons.TopologyTopicNames.MEDIA_INTERMEDIATE_TOPIC_NAME;
+import static eu.europeana.cloud.commons.TopologyPropertyKeys.KAFKA_HOSTS;
+import static eu.europeana.cloud.commons.TopologyTopicNames.*;
 
 public class MediaTopology {
     private static final Logger LOGGER = LoggerFactory.getLogger(MediaTopology.class);
@@ -54,22 +56,18 @@ public class MediaTopology {
 
     private static Topology buildTopology(Properties properties) {
         Topology topology = new Topology();
-        topology.addSource(MEDIA_INPUT_SOURCE_NAME, Serdes.String().deserializer(), new MessageSerde().deserializer(), MEDIA_INPUT_TOPIC_NAME);
-        topology.addProcessor(MEDIA_FILE_READER_PROCESSOR_NAME, () -> new FileReaderProcessor(properties), MEDIA_INPUT_SOURCE_NAME);
-        topology.addProcessor(MEDIA_RESOURCE_GETTER_PROCESSOR_NAME, () -> new RdfResourceProcessor(properties), MEDIA_FILE_READER_PROCESSOR_NAME);
-        topology.addProcessor(MEDIA_RESOURCE_EXTRACTOR_PROCESSOR_NAME, () -> new MediaExtractorProcessor(properties),
-                MEDIA_RESOURCE_GETTER_PROCESSOR_NAME);
-        topology.addProcessor(MEDIA_ENRICH_PROCESSOR_NAME, () -> new EnrichProcessor(properties),
-                MEDIA_RESOURCE_EXTRACTOR_PROCESSOR_NAME);
-        topology.addProcessor(MEDIA_RECORD_WRITER_PROCESSOR_NAME, () -> new WriteRecordProcessor(properties), MEDIA_ENRICH_PROCESSOR_NAME);
-        topology.addSink(MEDIA_INTERMEDIATE_SINK_NAME, MEDIA_INTERMEDIATE_TOPIC_NAME, Serdes.String().serializer(), new MessageSerde().serializer(),
-                MEDIA_RECORD_WRITER_PROCESSOR_NAME, MEDIA_ENRICH_PROCESSOR_NAME, MEDIA_RESOURCE_EXTRACTOR_PROCESSOR_NAME,
-                MEDIA_RESOURCE_GETTER_PROCESSOR_NAME, MEDIA_FILE_READER_PROCESSOR_NAME);
-
-        topology.addSource(MEDIA_NOTIFICATION_SOURCE_NAME, Serdes.String().deserializer(), new MessageSerde().deserializer(), MEDIA_INTERMEDIATE_TOPIC_NAME);
-        topology.addProcessor(MEDIA_NOTIFICATION_PROCESSOR_NAME, new NotificationProcessorSupplier(properties),
-                MEDIA_NOTIFICATION_SOURCE_NAME);
-        return topology;
+        try (RecordExecutionSerde recordExecutionSerde = new RecordExecutionSerde();
+             RecordExecutionKeySerde recordExecutionKeySerde = new RecordExecutionKeySerde();
+             RecordExecutionResultSerde recordExecutionResultSerde = new RecordExecutionResultSerde();
+             RecordExecutionExceptionSerde recordExecutionExceptionSerde = new RecordExecutionExceptionSerde()
+        ) {
+            topology.addSource(MEDIA_TOPOLOGY_SOURCE_NAME, recordExecutionKeySerde.deserializer(), recordExecutionSerde.deserializer(), MEDIA_SOURCE_TOPIC_NAME);
+            topology.addProcessor(MEDIA_PROCESSOR_NAME, () -> new MediaProcessor(properties), MEDIA_TOPOLOGY_SOURCE_NAME);
+            topology.addSink(MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), MEDIA_PROCESSOR_NAME);
+            topology.addSink(MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
+                    MEDIA_PROCESSOR_NAME);
+            return topology;
+        }
     }
 
     private static Properties readProperties() throws IOException {
@@ -78,7 +76,7 @@ public class MediaTopology {
                 .getResource("mediaTopology.properties").getPath())) {
             properties.load(fis);
             properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "media-topology");
-            properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+            properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(KAFKA_HOSTS));
             properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
             properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
             properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");

@@ -1,4 +1,4 @@
-package eu.europeana.cloud.dto.database;
+package eu.europeana.cloud.dto;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;

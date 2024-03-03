@@ -1,7 +1,7 @@
 package eu.europeana.cloud.processors.transformationProcessors;
 
 import com.google.gson.JsonObject;
-import eu.europeana.cloud.dto.database.*;
+import eu.europeana.cloud.dto.*;
 import eu.europeana.metis.transformation.service.*;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;

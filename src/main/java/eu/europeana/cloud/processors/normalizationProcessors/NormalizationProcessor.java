@@ -1,6 +1,6 @@
 package eu.europeana.cloud.processors.normalizationProcessors;
 
-import eu.europeana.cloud.dto.database.*;
+import eu.europeana.cloud.dto.*;
 import eu.europeana.normalization.NormalizerFactory;
 import eu.europeana.normalization.model.NormalizationResult;
 import eu.europeana.normalization.util.NormalizationConfigurationException;

@@ -1,7 +1,7 @@
 package eu.europeana.cloud.processors.validationProcessors;
 
 import com.google.gson.JsonObject;
-import eu.europeana.cloud.dto.database.*;
+import eu.europeana.cloud.dto.*;
 import eu.europeana.metis.transformation.service.TransformationException;
 import eu.europeana.metis.transformation.service.XsltTransformer;
 import eu.europeana.validation.model.ValidationResult;

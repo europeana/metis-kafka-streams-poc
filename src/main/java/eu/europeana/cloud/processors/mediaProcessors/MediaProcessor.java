@@ -1,76 +1,152 @@
 package eu.europeana.cloud.processors.mediaProcessors;
 
-import com.google.gson.Gson;
-import eu.europeana.cloud.cassandra.CassandraConnectionProvider;
-import eu.europeana.cloud.commons.TopologyPropertyKeys;
-import eu.europeana.cloud.mcs.driver.FileServiceClient;
-import eu.europeana.cloud.mcs.driver.RecordServiceClient;
-import eu.europeana.cloud.service.dps.storm.dao.CassandraTaskInfoDAO;
-import eu.europeana.cloud.service.dps.storm.topologies.media.service.AmazonClient;
-import eu.europeana.cloud.service.dps.storm.topologies.media.service.ThumbnailUploader;
-import eu.europeana.cloud.service.dps.storm.utils.TaskStatusChecker;
+import eu.europeana.cloud.dto.*;
 import eu.europeana.metis.mediaprocessing.*;
+import eu.europeana.metis.mediaprocessing.exception.MediaExtractionException;
 import eu.europeana.metis.mediaprocessing.exception.MediaProcessorException;
+import eu.europeana.metis.mediaprocessing.exception.RdfDeserializationException;
+import eu.europeana.metis.mediaprocessing.exception.RdfSerializationException;
+import eu.europeana.metis.mediaprocessing.model.EnrichedRdf;
+import eu.europeana.metis.mediaprocessing.model.RdfResourceEntry;
+import eu.europeana.metis.mediaprocessing.model.ResourceExtractionResult;
+import eu.europeana.metis.mediaprocessing.model.Thumbnail;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.kafka.streams.processor.api.Processor;
+import org.apache.kafka.streams.processor.api.ProcessorContext;
+import org.apache.kafka.streams.processor.api.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Properties;
 
-public class MediaProcessor {
+import static eu.europeana.cloud.commons.TopologyNodeNames.MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
+import static eu.europeana.cloud.commons.TopologyNodeNames.MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME;
+import static java.util.Objects.nonNull;
 
-    protected final MediaExtractor mediaExtractor;
-    protected final ThumbnailUploader thumbnailUploader;
-    protected final RdfDeserializer rdfDeserializer;
-    protected final RdfSerializer rdfSerializer;
-    protected final Properties topologyProperties;
-    protected final TaskStatusChecker taskStatusChecker;
-    protected final CassandraConnectionProvider cassandraConnectionProvider;
-    protected final Gson gson;
-    protected final FileServiceClient fileServiceClient;
-    protected final CassandraTaskInfoDAO taskInfoDAO;
-    protected final AmazonClient amazonClient;
-    protected final RecordServiceClient recordServiceClient;
+public class MediaProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MediaProcessor.class);
+    private final MediaExtractor mediaExtractor;
+    private final RdfSerializer rdfSerializer;
+    private final RdfDeserializer rdfDeserializer;
+    private ProcessorContext<RecordExecutionKey, RecordExecutionProduct> context;
 
-    public MediaProcessor(Properties topologyProperties) {
-        this.topologyProperties = topologyProperties;
+    public MediaProcessor(Properties properties) {
         try {
-            fileServiceClient = new FileServiceClient(topologyProperties.getProperty(TopologyPropertyKeys.MCS_ADDRESS),
-                    topologyProperties.getProperty(TopologyPropertyKeys.MCS_USER),
-                    topologyProperties.getProperty(TopologyPropertyKeys.MCS_PASSWORD));
-            rdfDeserializer = new RdfConverterFactory().createRdfDeserializer();
-            rdfSerializer = new RdfConverterFactory().createRdfSerializer();
-            mediaExtractor = new MediaProcessorFactory().createMediaExtractor();
-            amazonClient = AmazonClient.builder()
-                    .awsAccessKey(topologyProperties.getProperty(TopologyPropertyKeys.AWS_CREDENTIALS_ACCESSKEY))
-                    .awsBucket(topologyProperties.getProperty(TopologyPropertyKeys.AWS_CREDENTIALS_BUCKET))
-                    .awsEndPoint(topologyProperties.getProperty(TopologyPropertyKeys.AWS_CREDENTIALS_ENDPOINT))
-                    .awsSecretKey(topologyProperties.getProperty(TopologyPropertyKeys.AWS_CREDENTIALS_SECRETKEY))
-                    .build();
-            //amazonClient.init();
-            cassandraConnectionProvider = new CassandraConnectionProvider(
-                    topologyProperties.getProperty(TopologyPropertyKeys.CASSANDRA_HOSTS),
-                    Integer.parseInt(topologyProperties.getProperty(TopologyPropertyKeys.CASSANDRA_PORT)),
-                    topologyProperties.getProperty(TopologyPropertyKeys.CASSANDRA_KEYSPACE_NAME),
-                    topologyProperties.getProperty(TopologyPropertyKeys.CASSANDRA_USERNAME),
-                    topologyProperties.getProperty(TopologyPropertyKeys.CASSANDRA_SECRET_TOKEN)
-            );
-            taskInfoDAO = new CassandraTaskInfoDAO(cassandraConnectionProvider);
-            taskStatusChecker = new TaskStatusChecker(new CassandraTaskInfoDAO(cassandraConnectionProvider));
-            recordServiceClient = new RecordServiceClient(topologyProperties.getProperty(TopologyPropertyKeys.MCS_ADDRESS),
-                    topologyProperties.getProperty(TopologyPropertyKeys.MCS_USER),
-                    topologyProperties.getProperty(TopologyPropertyKeys.MCS_PASSWORD));
-            thumbnailUploader = new ThumbnailUploader(taskStatusChecker, amazonClient);
-            gson = new Gson();
+            RdfConverterFactory rdfConverterFactory = new RdfConverterFactory();
+            rdfDeserializer = rdfConverterFactory.createRdfDeserializer();
+            rdfSerializer = rdfConverterFactory.createRdfSerializer();
+            MediaProcessorFactory mediaProcessorFactory = new MediaProcessorFactory();
+            mediaExtractor = mediaProcessorFactory.createMediaExtractor();
         } catch (MediaProcessorException e) {
+            LOGGER.error("Error during initialization of MediaProcessor", e);
             throw new RuntimeException(e);
         }
     }
 
-    // For testing purposes
-    public boolean isTaskDropped(String taskId) {
-//    try {
-        return false;
-//      return taskInfoDAO.isDroppedTask(Long.parseLong(taskId));
-//    } catch (TaskInfoDoesNotExistException e) {
-//      return true;
-//    }
+    @Override
+    public void init(ProcessorContext<RecordExecutionKey, RecordExecutionProduct> context) {
+        Processor.super.init(context);
+        this.context = context;
+    }
+
+    @Override
+    public void process(Record<RecordExecutionKey, RecordExecution> record) {
+        final byte[] rdfBytes = record.value().getRecordData().getBytes(StandardCharsets.UTF_8);
+        final EnrichedRdf enrichedRdf;
+
+        try {
+            enrichedRdf = getEnrichedRdf(rdfBytes);
+
+            RdfResourceEntry resourceMainThumbnail;
+            resourceMainThumbnail = rdfDeserializer.getMainThumbnailResourceForMediaExtraction(rdfBytes);
+
+            boolean hasMainThumbnail = false;
+            if (resourceMainThumbnail != null) {
+                LOGGER.info("Processed record contain main thumbnail: {}", resourceMainThumbnail.getResourceUrl());
+                hasMainThumbnail = processResourceWithoutThumbnail(resourceMainThumbnail,
+                        record.key().getRecordId(), enrichedRdf, mediaExtractor);
+            }
+            List<RdfResourceEntry> remainingResourcesList;
+            remainingResourcesList = rdfDeserializer.getRemainingResourcesForMediaExtraction(rdfBytes);
+            if (hasMainThumbnail) {
+                remainingResourcesList.forEach(entry ->
+                        processResourceWithThumbnail(entry, record.key().getRecordId(), enrichedRdf,
+                                mediaExtractor)
+                );
+            } else {
+                remainingResourcesList.forEach(entry ->
+                        processResourceWithoutThumbnail(entry, record.key().getRecordId(), enrichedRdf,
+                                mediaExtractor)
+                );
+            }
+            String resultFileData = new String(getOutputRdf(enrichedRdf), StandardCharsets.UTF_8);
+            context.forward(new Record<>(record.key(),
+                    new RecordExecutionResult(resultFileData, record.value().getExecutionName()),
+                    record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+        } catch (RdfDeserializationException | RdfSerializationException e) {
+            LOGGER.warn("Exception during enrichment of record: key:{}, Exception e: {}", record.key(), e);
+            context.forward(new Record<>(record.key(),
+                    new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+                    record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+        }
+    }
+
+
+    private EnrichedRdf getEnrichedRdf(byte[] rdfBytes) throws RdfDeserializationException {
+        return rdfDeserializer.getRdfForResourceEnriching(rdfBytes);
+    }
+
+    private byte[] getOutputRdf(EnrichedRdf rdfForEnrichment) throws RdfSerializationException {
+        return rdfSerializer.serialize(rdfForEnrichment);
+    }
+
+    private boolean processResourceWithThumbnail(RdfResourceEntry resourceToProcess, String recordId,
+                                                 EnrichedRdf rdfForEnrichment, MediaExtractor extractor) {
+        return processResource(resourceToProcess, recordId, rdfForEnrichment, extractor, true);
+    }
+
+    private boolean processResourceWithoutThumbnail(RdfResourceEntry resourceToProcess, String recordId,
+                                                    EnrichedRdf rdfForEnrichment, MediaExtractor extractor) {
+        return processResource(resourceToProcess, recordId, rdfForEnrichment, extractor, false);
+    }
+
+    private boolean processResource(RdfResourceEntry resourceToProcess, String recordId,
+                                    EnrichedRdf rdfForEnrichment, MediaExtractor extractor, boolean gotMainThumbnail) {
+        ResourceExtractionResult extraction;
+        boolean successful = false;
+
+        try {
+            // Perform media extraction
+            extraction = extractor.performMediaExtraction(resourceToProcess, gotMainThumbnail);
+
+            // Check if extraction for media was successful
+            successful = extraction != null;
+            LOGGER.info("Extraction of resource {} was successful: {}", resourceToProcess.getResourceUrl(), successful);
+            // If successful then store data
+            if (successful) {
+                rdfForEnrichment.enrichResource(extraction.getMetadata());
+                if (!CollectionUtils.isEmpty(extraction.getThumbnails())) {
+                    storeThumbnails(recordId, extraction.getThumbnails());
+                }
+            }
+
+        } catch (MediaExtractionException e) {
+            LOGGER.warn("Error while extracting media for record {}. ", recordId, e);
+        }
+
+        return successful;
+    }
+
+    private void storeThumbnails(String recordId, List<Thumbnail> thumbnails) {
+        if (nonNull(thumbnails)) {
+            LOGGER.debug("Fake storing thumbnail");
+        }
+    }
+
+    @Override
+    public void close() {
+        Processor.super.close();
     }
 }

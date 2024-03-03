@@ -1,7 +1,7 @@
 package eu.europeana.cloud.processors.databaseQueueReaderProcessors;
 
-import eu.europeana.cloud.dto.database.RecordExecution;
-import eu.europeana.cloud.dto.database.RecordExecutionKey;
+import eu.europeana.cloud.dto.RecordExecution;
+import eu.europeana.cloud.dto.RecordExecutionKey;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.api.Record;

@@ -1,9 +1,6 @@
 package eu.europeana.cloud.commons;
 
 public class TopologyTopicNames {
-    public static final String MEDIA_INPUT_TOPIC_NAME = "media-input";
-    public static final String MEDIA_INTERMEDIATE_TOPIC_NAME = "media-output";
-
     public static final String DATABASE_TRANSFER_RECORD_EXECUTION_TOPIC_NAME = "connect.public.record_execution";
     public static final String DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME = "connect.public.record_execution_result";
     public static final String DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME = "connect.public.record_execution_exception";

@@ -1,7 +1,7 @@
 package eu.europeana.cloud.processors.enrichmentProcessors;
 
 import eu.europeana.cloud.commons.TopologyPropertyKeys;
-import eu.europeana.cloud.dto.database.*;
+import eu.europeana.cloud.dto.*;
 import eu.europeana.enrichment.rest.client.EnrichmentWorker;
 import eu.europeana.enrichment.rest.client.EnrichmentWorkerImpl;
 import eu.europeana.enrichment.rest.client.dereference.DereferencerProvider;

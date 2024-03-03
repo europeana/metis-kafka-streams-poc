@@ -2,7 +2,7 @@ package eu.europeana.cloud.processors.oaiHarvestProcessors;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import eu.europeana.cloud.dto.database.*;
+import eu.europeana.cloud.dto.*;
 import eu.europeana.metis.harvesting.HarvesterException;
 import eu.europeana.metis.harvesting.HarvesterFactory;
 import eu.europeana.metis.harvesting.oaipmh.OaiHarvest;

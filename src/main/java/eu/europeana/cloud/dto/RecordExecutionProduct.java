@@ -1,4 +1,4 @@
-package eu.europeana.cloud.dto.database;
+package eu.europeana.cloud.dto;
 
 
 import lombok.ToString;

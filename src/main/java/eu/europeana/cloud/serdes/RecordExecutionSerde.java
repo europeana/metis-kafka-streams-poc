@@ -1,7 +1,7 @@
 package eu.europeana.cloud.serdes;
 
 import com.google.gson.*;
-import eu.europeana.cloud.dto.database.RecordExecution;
+import eu.europeana.cloud.dto.RecordExecution;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;

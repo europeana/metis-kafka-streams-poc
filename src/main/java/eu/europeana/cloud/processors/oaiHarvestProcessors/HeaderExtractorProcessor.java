@@ -2,10 +2,10 @@ package eu.europeana.cloud.processors.oaiHarvestProcessors;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import eu.europeana.cloud.dto.database.RecordExecution;
-import eu.europeana.cloud.dto.database.RecordExecutionException;
-import eu.europeana.cloud.dto.database.RecordExecutionKey;
-import eu.europeana.cloud.dto.database.RecordExecutionProduct;
+import eu.europeana.cloud.dto.RecordExecution;
+import eu.europeana.cloud.dto.RecordExecutionException;
+import eu.europeana.cloud.dto.RecordExecutionKey;
+import eu.europeana.cloud.dto.RecordExecutionProduct;
 import eu.europeana.metis.harvesting.HarvesterException;
 import eu.europeana.metis.harvesting.HarvesterFactory;
 import eu.europeana.metis.harvesting.ReportingIteration;

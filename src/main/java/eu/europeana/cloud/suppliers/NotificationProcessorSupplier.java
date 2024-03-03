@@ -1,7 +1,7 @@
 package eu.europeana.cloud.suppliers;
 
-import eu.europeana.cloud.dto.queues.Message;
-import eu.europeana.cloud.processors.mediaProcessors.NotificationProcessor;
+import eu.europeana.cloud.dto.RecordExecutionException;
+import eu.europeana.cloud.dto.RecordExecutionKey;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorSupplier;
@@ -14,7 +14,7 @@ import java.util.Properties;
 import java.util.Set;
 
 
-public class NotificationProcessorSupplier implements ProcessorSupplier<String, Message, String, Message> {
+public class NotificationProcessorSupplier implements ProcessorSupplier<RecordExecutionKey, RecordExecutionException, RecordExecutionKey, RecordExecutionException> {
 
     public final static String ERROR_STORE_NAME = "error-store";
     public final static String SUCCESSFUL_STORE_NAME = "success-store";
@@ -37,9 +37,10 @@ public class NotificationProcessorSupplier implements ProcessorSupplier<String, 
     }
 
     @Override
-    public Processor<String, Message, String, Message> get() {
+    public Processor<RecordExecutionKey, RecordExecutionException, RecordExecutionKey, RecordExecutionException> get() {
 
-        return new NotificationProcessor(properties);
+        //return new NotificationProcessor(properties);
+        return null;
     }
 
     @Override
