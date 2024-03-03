@@ -31,3 +31,9 @@ records or exception inside appropriate kafka queues.
 
 **To access kafka queues go to http://localhost:9000**
 **To access kafka connect connectors go to http://localhost:8083/connectors**
+**After trying to rerun topology there might be some delay before it gets active again since it needs to read some
+metadata from queue**
+
+**Worries**
+**For now record data is stored in queues when passing between nodes what is concerning in production environment (for
+PoC is fine I guess)**
