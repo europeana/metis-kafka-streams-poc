@@ -35,7 +35,7 @@ public class CommonProcessor {
         try {
             taskStatusStatement.setString(1, taskId);
             ResultSet rs = taskStatusStatement.executeQuery();
-            if (rs.first()) {
+            if (rs.next()) {
                 String taskStatus = rs.getString(1);
                 LOGGER.info("task with id {} has status {}", taskId, taskStatus);
                 return (taskStatus.equals("DROPPED") || taskStatus.equals("FAILED"));
