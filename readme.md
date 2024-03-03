@@ -1,21 +1,33 @@
-To run this POC we need kafka cluster that support replication that is why I created docker compose for its sake.
-After launching docker compose open kafdrop (localhost:9000) and create two kafka topics:
--"media-input" with replication factor set to 3
--"media-output" with replication factor set to 3
-After further investigation we might come to conclusion that we need more topics but for now It works with just two.
+To run this PoC we need to run docker compose that can be found in docker directory of this project.
+After docker compose successfully started we need to launch kafka connect connectors by running shell script that can be
+found under docker/init-scripts path inside this project
 We also need to install image magick with version 7 or higher for sake of media topology (I used method 2 from this
-guide: https://linuxopsys.com/topics/install-latest-imagemagick-on-ubuntu).
+guide: https://linuxopsys.com/topics/install-latest-imagemagick-on-ubuntu)
+We also need to create property files for all topologies that we want to run
 
-To start workflow we need to send sort of task definition to media-input queue.
-Currently, we are using file that is present in ecloud mcs.
-To input to kafka queue we can use binary that is attached to kafka package in kafka_
-{version}/bin/kafka-console-producer.sh
-Example method execution:
-./kafka-console-producer.sh --topic media-input --bootstrap-server localhost:9092
+By default, postgres db is created on localhost, port 5432, with database name poc-db and login and password equal to
+postgres.
 
-minimal task definition syntax:
-{"fileUrl": "{mcs-file-path}","throttleLevel":"{MEDIUM | LOW | HIGH}", "taskId":"{long number}", "outputDataset":"
-{dataset id}"}
+To run this PoC we need to start Database transfer topology and topology that we want to run.
 
-Example of task definition:
-{"fileUrl": "https://ecloud-test.apps.dcw1.paas.psnc.pl/mcs/records/F4VSSQKDRUEECT7OUSLLLBTLPI2SD57P7R5E6JCBOENATL3DVRFA/representations/metadataRecord/versions/3ef665b0-b933-11ee-8000-4e008e54a287/files/dceef4b7-d9c1-3632-8715-34301a7c7851","throttleLevel":"MEDIUM", "taskId":"123", "outputDataset":"02749bdb-eaac-4794-98cd-ebdd6de1ce45"}
+To send task to any topology we must add record to record_execution table of our postgres db.
+Depends on topology there might be required task parameters that we need to fill.
+If you got to common classes and look for ExecutionPropertyKeys then you will see constants that define those properties
+in format:
+-<TOPOLOGY_THAT_NEEDS_THAT_PROPERTY>_<PROPERTY_NAME>
+In case your topology require any property (OAI, transformation, validation) then put those values in field
+_execution_parameters_ of table mentioned above.
+Record data or url to harvest should be put as value of _field record_data_.
+Topology that we want to run is specified by execution_name field that needs to be set. Possible value can be found in
+common class TopologyNames file.
+Example oai task definition:
+-INSERT INTO record_execution (dataset_id, execution_id, record_id, record_data, execution_name, execution_parameters)
+VALUES ('1', '1', '1', '', 'oai_topology', '{"oaiEndpoint":"https://aggregator.ekt.gr/aggregator-oai/request", "
+oaiMetadataPrefix":"edm", "oaiSet":"mantamado"}');
+
+In the end result values will be automatically put inside database record_execution_result or record_execution_exception
+table based on result of task, but for now I am trying to configure kafka connect to do so, so you can find result
+records or exception inside appropriate kafka queues.
+
+**To access kafka queues go to http://localhost:9000**
+**To access kafka connect connectors go to http://localhost:8083/connectors**
