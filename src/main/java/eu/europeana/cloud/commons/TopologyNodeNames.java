@@ -42,6 +42,11 @@ public class TopologyNodeNames {
     public static final String MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "media-database-transfer-execution-results-sink";
     public static final String MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "media-database-transfer-execution-exception-sink";
 
+    public static final String INDEXING_TOPOLOGY_SOURCE_NAME = "indexing-source";
+    public static final String INDEXING_PROCESSOR_NAME = "indexing-processor";
+    public static final String INDEXING_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME = "indexing-database-transfer-execution-results-sink";
+    public static final String INDEXING_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME = "indexing-database-transfer-execution-exception-sink";
+
     private TopologyNodeNames() {
     }
 }

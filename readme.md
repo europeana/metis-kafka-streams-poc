@@ -19,7 +19,7 @@ If you got to common classes and look for ExecutionPropertyKeys then you will se
 in format:
 -<TOPOLOGY_THAT_NEEDS_THAT_PROPERTY>_<PROPERTY_NAME>
 
-In case your topology require any property (OAI, transformation, validation) then put those values in field
+In case your topology require any property (OAI, transformation, validation, indexing) then put those values in field
 _execution_parameters_ of table mentioned above.
 
 Record data or url to harvest should be put as value of _field record_data_.

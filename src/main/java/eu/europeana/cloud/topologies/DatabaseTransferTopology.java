@@ -70,6 +70,7 @@ public class DatabaseTransferTopology {
             NewTopic transformationTopic = new NewTopic(TRANSFORMATION_SOURCE_TOPIC_NAME, 1, (short) 3);
             NewTopic enrichmentTopic = new NewTopic(ENRICHMENT_SOURCE_TOPIC_NAME, 1, (short) 3);
             NewTopic normalizationTopic = new NewTopic(NORMALIZATION_SOURCE_TOPIC_NAME, 1, (short) 3);
+            NewTopic indexingTopic = new NewTopic(INDEXING_SOURCE_TOPIC_NAME, 1, (short) 3);
             CreateTopicsOptions topicsOptions = new CreateTopicsOptions()
                     .retryOnQuotaViolation(false);
             CreateTopicsResult createTopicsResult = admin.createTopics(List.of(
@@ -81,7 +82,8 @@ public class DatabaseTransferTopology {
                     mediaTopic,
                     transformationTopic,
                     enrichmentTopic,
-                    normalizationTopic
+                    normalizationTopic,
+                    indexingTopic
             ), topicsOptions);
             while (!createTopicsResult.all().isDone()) {
                 try {

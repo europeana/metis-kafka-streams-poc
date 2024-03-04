@@ -7,6 +7,7 @@ public class TopologyTopicNames {
     public static final String OAI_HARVEST_SOURCE_TOPIC_NAME = "oai-harvest-topology";
     public static final String VALIDATION_SOURCE_TOPIC_NAME = "validation-topology";
     public static final String MEDIA_SOURCE_TOPIC_NAME = "media-topology";
+    public static final String INDEXING_SOURCE_TOPIC_NAME = "indexing-topology";
     public static final String NORMALIZATION_SOURCE_TOPIC_NAME = "normalization-topology";
     public static final String TRANSFORMATION_SOURCE_TOPIC_NAME = "transformation-topology";
     public static final String ENRICHMENT_SOURCE_TOPIC_NAME = "enrichment-topology";

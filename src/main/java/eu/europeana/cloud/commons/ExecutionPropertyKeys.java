@@ -9,6 +9,11 @@ public class ExecutionPropertyKeys {
     public static final String TRANSFORMATION_DATASET_COUNTRY = "datasetCountry";
     public static final String TRANSFORMATION_DATASET_LANGUAGE = "datasetLanguage";
     public static final String TRANSFORMATION_DATASET_NAME = "datasetName";
+    public static final String INDEXING_TARGET_DATABASE = "targetDatabase";
+    public static final String INDEXING_RECORD_DATE = "recordDate";
+    public static final String INDEXING_PRESERVE_TIMESTAMPS = "preserveTimestamps";
+    public static final String INDEXING_PERFORM_REDIRECTS = "performRedirects";
+    public static final String INDEXING_DATASET_IDS_FOR_REDIRECTION = "datasetIdsForRedirection";
 
     private ExecutionPropertyKeys() {
     }
