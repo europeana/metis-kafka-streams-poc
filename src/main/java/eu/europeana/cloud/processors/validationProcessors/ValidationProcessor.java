@@ -117,5 +117,6 @@ public class ValidationProcessor extends CommonProcessor implements Processor<Re
     public void close() {
         Processor.super.close();
         closeDatabaseConnection();
+        xsltTransformer.close();
     }
 }
