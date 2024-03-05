@@ -61,6 +61,10 @@ CREATE TABLE IF NOT EXISTS record_execution_exception
 (
     255
 ) NOT NULL,
+    execution_name VARCHAR
+(
+    255
+),
     exception_name VARCHAR
 (
     255
@@ -70,8 +74,7 @@ CREATE TABLE IF NOT EXISTS record_execution_exception
 (
     dataset_id,
     execution_id,
-    record_id,
-    exception_name
+    record_id
 ), -- Define a composite primary key
     FOREIGN KEY
 (
@@ -102,6 +105,10 @@ CREATE TABLE IF NOT EXISTS record_execution_result
     255
 ) NOT NULL,
     record_result_data TEXT NOT NULL,
+    execution_name VARCHAR
+(
+    255
+),
     PRIMARY KEY
 (
     dataset_id,

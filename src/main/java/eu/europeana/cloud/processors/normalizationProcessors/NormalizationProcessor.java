@@ -15,9 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-import static eu.europeana.cloud.commons.TopologyNodeNames.NORMALIZATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
-import static eu.europeana.cloud.commons.TopologyNodeNames.NORMALIZATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME;
-
 public class NormalizationProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationProcessor.class);
     private ProcessorContext<RecordExecutionKey, RecordExecutionProduct> context;
@@ -44,21 +41,24 @@ public class NormalizationProcessor extends CommonProcessor implements Processor
                 }
                 String normalizedData = normalizedResult.getNormalizedRecordInEdmXml();
                 LOGGER.info("Normalization success for record: key:{} value:{}", record.key(), record.value());
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionResult(normalizedData,
-                                record.value().getExecutionName()),
-                        record.timestamp()), NORMALIZATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionResult(normalizedData,
+//                                record.value().getExecutionName()),
+//                        record.timestamp()), NORMALIZATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+                insertRecordExecutionResult(record.key(), new RecordExecutionResult(normalizedData, record.value().getExecutionName()));
             } catch (NormalizationException | NormalizationConfigurationException e) {
                 LOGGER.info("Exception occurred during normalization for record: key:{}, Exception e: {}", record.key(), e);
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
-                        record.timestamp()), NORMALIZATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()));
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+//                        record.timestamp()), NORMALIZATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
             }
         } else {
             LOGGER.warn("Task was dropped: key:{}", record.key());
-            context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
-                    record.timestamp()), NORMALIZATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//            context.forward(new Record<>(record.key(),
+//                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
+//                    record.timestamp()), NORMALIZATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+            insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()));
         }
     }
 

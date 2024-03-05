@@ -1,10 +1,7 @@
 package eu.europeana.cloud.processors.indexingProcessors;
 
 import com.google.gson.JsonObject;
-import eu.europeana.cloud.dto.RecordExecution;
-import eu.europeana.cloud.dto.RecordExecutionException;
-import eu.europeana.cloud.dto.RecordExecutionKey;
-import eu.europeana.cloud.dto.RecordExecutionProduct;
+import eu.europeana.cloud.dto.*;
 import eu.europeana.cloud.exceptions.TaskDroppedException;
 import eu.europeana.cloud.exceptions.TaskNotSuitableForPublicationException;
 import eu.europeana.cloud.processors.commonProcessors.CommonProcessor;
@@ -12,7 +9,6 @@ import eu.europeana.cloud.service.dps.metis.indexing.TargetIndexingDatabase;
 import eu.europeana.cloud.service.dps.service.utils.indexing.IndexWrapper;
 import eu.europeana.indexing.IndexingProperties;
 import eu.europeana.indexing.exception.IndexingException;
-import eu.europeana.indexing.tiers.model.MediaTier;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.api.Record;
@@ -24,8 +20,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static eu.europeana.cloud.commons.ExecutionPropertyKeys.*;
-import static eu.europeana.cloud.commons.TopologyNodeNames.INDEXING_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
-import static eu.europeana.cloud.commons.TopologyNodeNames.INDEXING_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME;
 
 public class IndexingProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexingProcessor.class);
@@ -56,22 +50,30 @@ public class IndexingProcessor extends CommonProcessor implements Processor<Reco
                 suitableForPublication = indexRecord(record, taskParameters);
                 if (suitableForPublication.get()) {
                     LOGGER.info("Record {} was indexed properly", record.key());
-                    context.forward(record, INDEXING_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+//                    context.forward(new Record<>(
+//                            record.key(),
+//                            new RecordExecutionResult(
+//                                    record.value().getRecordData(),
+//                                    record.value().getExecutionName()),
+//                            record.timestamp()), INDEXING_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+                    insertRecordExecutionResult(record.key(), new RecordExecutionResult(record.value().getRecordData(), record.value().getExecutionName()));
                 } else {
                     removeIndexedRecords(record.key().getRecordId(), TargetIndexingDatabase.valueOf(taskParameters.get(INDEXING_TARGET_DATABASE).getAsString()));
                     throw new TaskNotSuitableForPublicationException();
                 }
             } catch (IndexingException | TaskNotSuitableForPublicationException e) {
                 LOGGER.warn("Record {} was not indexed due to: {}", record.key(), e.getMessage());
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
-                        record.timestamp()), INDEXING_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+//                        record.timestamp()), INDEXING_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()));
             }
         } else {
             LOGGER.warn("Task was dropped: key:{}", record.key());
-            context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
-                    record.timestamp()), INDEXING_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//            context.forward(new Record<>(record.key(),
+//                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
+//                    record.timestamp()), INDEXING_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+            insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()));
         }
     }
 
@@ -81,7 +83,7 @@ public class IndexingProcessor extends CommonProcessor implements Processor<Reco
         String recordData = record.value().getRecordData();
         TargetIndexingDatabase database = TargetIndexingDatabase.valueOf(taskParameters.get(INDEXING_TARGET_DATABASE).getAsString());
         indexWrapper.getIndexer(database).index(recordData, executionIndexingProperties, tier -> {
-            suitableForPublication.set((database == TargetIndexingDatabase.PREVIEW) || (tier.getMetadataTier() != MediaTier.T0));
+            suitableForPublication.set((database == TargetIndexingDatabase.PREVIEW));//|| (tier.getMetadataTier() != MediaTier.T0));
             return suitableForPublication.get();
         });
         return suitableForPublication;

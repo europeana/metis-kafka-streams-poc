@@ -19,9 +19,10 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import static eu.europeana.cloud.commons.TopologyNodeNames.*;
+import static eu.europeana.cloud.commons.TopologyNodeNames.ENRICHMENT_PROCESSOR_NAME;
+import static eu.europeana.cloud.commons.TopologyNodeNames.ENRICHMENT_TOPOLOGY_SOURCE_NAME;
 import static eu.europeana.cloud.commons.TopologyPropertyKeys.KAFKA_HOSTS;
-import static eu.europeana.cloud.commons.TopologyTopicNames.*;
+import static eu.europeana.cloud.commons.TopologyTopicNames.ENRICHMENT_SOURCE_TOPIC_NAME;
 
 public class EnrichmentTopology {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnrichmentTopology.class);
@@ -64,9 +65,9 @@ public class EnrichmentTopology {
         ) {
             topology.addSource(ENRICHMENT_TOPOLOGY_SOURCE_NAME, recordExecutionKeySerde.deserializer(), recordExecutionSerde.deserializer(), ENRICHMENT_SOURCE_TOPIC_NAME);
             topology.addProcessor(ENRICHMENT_PROCESSOR_NAME, () -> new EnrichmentProcessor(properties), ENRICHMENT_TOPOLOGY_SOURCE_NAME);
-            topology.addSink(ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), ENRICHMENT_PROCESSOR_NAME);
-            topology.addSink(ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
-                    ENRICHMENT_PROCESSOR_NAME);
+//            topology.addSink(ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), ENRICHMENT_PROCESSOR_NAME);
+//            topology.addSink(ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
+//                    ENRICHMENT_PROCESSOR_NAME);
 
         }
         return topology;
@@ -81,7 +82,7 @@ public class EnrichmentTopology {
             properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(KAFKA_HOSTS));
             properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
             properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         } catch (FileNotFoundException e) {
             LOGGER.error("Property file not found", e);
         }

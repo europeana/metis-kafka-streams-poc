@@ -23,9 +23,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static eu.europeana.cloud.commons.TopologyNodeNames.ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
-import static eu.europeana.cloud.commons.TopologyNodeNames.ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME;
-
 public class EnrichmentProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnrichmentProcessor.class);
     private final EnrichmentWorker enrichmentWorker;
@@ -61,23 +58,27 @@ public class EnrichmentProcessor extends CommonProcessor implements Processor<Re
         if (!isTaskDropped(record.key().getExecutionId())) {
             ProcessedResult<String> results = enrichmentWorker.process(record.value().getRecordData());
             if (results.getRecordStatus() == ProcessedResult.RecordStatus.CONTINUE) {
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionResult(results.getProcessedRecord(),
-                                record.value().getExecutionName()),
-                        record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionResult(results.getProcessedRecord(),
+//                                record.value().getExecutionName()),
+//                        record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+                insertRecordExecutionResult(record.key(), new RecordExecutionResult(results.getProcessedRecord(),
+                        record.value().getExecutionName()));
             } else {
                 Set<Report> enrichmentErrorReports = results.getReport().stream().filter(report -> report.getMessageType() == Type.ERROR).collect(Collectors.toSet());
                 String errorReportContent = enrichmentErrorReports.stream().map(Report::getMessage).collect(Collectors.joining("\n"));
                 LOGGER.warn("Enrichment ended with error for record: key:{}, Reports: {}", record.key(), results.getReport());
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionException(record.value().getExecutionName(), EnrichmentException.class.getName(), errorReportContent),
-                        record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionException(record.value().getExecutionName(), EnrichmentException.class.getName(), errorReportContent),
+//                        record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), EnrichmentException.class.getName(), errorReportContent));
             }
         } else {
             LOGGER.warn("Task was dropped: key:{}", record.key());
-            context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
-                    record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//            context.forward(new Record<>(record.key(),
+//                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
+//                    record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+            insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()));
         }
     }
 

@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static eu.europeana.cloud.commons.ExecutionPropertyKeys.VALIDATION_SUB_TYPE;
-import static eu.europeana.cloud.commons.TopologyNodeNames.VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
 
 public class ValidationProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidationProcessor.class);
@@ -73,27 +72,31 @@ public class ValidationProcessor extends CommonProcessor implements Processor<Re
                 ValidationResult validationResult = validationService.singleValidation(schema, rootFileLocation, schematronFileLocation, writer.toString());
                 if (validationResult.isSuccess()) {
                     LOGGER.info("Validation success for record: key:{} value:{}", record.key(), record.value());
-                    context.forward(new Record<>(record.key(),
-                            new RecordExecutionResult(record.value().getRecordData(), record.value().getExecutionName()),
-                            record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//                    context.forward(new Record<>(record.key(),
+//                            new RecordExecutionResult(record.value().getRecordData(), record.value().getExecutionName()),
+//                            record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                    insertRecordExecutionResult(record.key(), new RecordExecutionResult(record.value().getRecordData(), record.value().getExecutionName()));
                 } else {
                     LOGGER.info("Validation failure for record: key:{} value:{}", record.key(), record.value());
-                    context.forward(new Record<>(record.key(),
-                            new RecordExecutionException(record.value().getExecutionName(), "ValidationFailureException", validationResult.getMessage()),
-                            record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//                    context.forward(new Record<>(record.key(),
+//                            new RecordExecutionException(record.value().getExecutionName(), "ValidationFailureException", validationResult.getMessage()),
+//                            record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                    insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), "ValidationFailureException", validationResult.getMessage()));
                 }
             } catch (TransformationException e) {
                 LOGGER.info("Exception occurred during validation for record: key:{} value:{}", record.key(), record.value());
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
-                        record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+//                        record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()));
             }
 
         } else {
             LOGGER.warn("Task was dropped: key:{}", record.key());
-            context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
-                    record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//            context.forward(new Record<>(record.key(),
+//                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
+//                    record.timestamp()), VALIDATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+            insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()));
         }
     }
 

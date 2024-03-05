@@ -23,8 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Properties;
 
-import static eu.europeana.cloud.commons.TopologyNodeNames.MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
-import static eu.europeana.cloud.commons.TopologyNodeNames.MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME;
 import static java.util.Objects.nonNull;
 
 public class MediaProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
@@ -86,20 +84,23 @@ public class MediaProcessor extends CommonProcessor implements Processor<RecordE
                     );
                 }
                 String resultFileData = new String(getOutputRdf(enrichedRdf), StandardCharsets.UTF_8);
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionResult(resultFileData, record.value().getExecutionName()),
-                        record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionResult(resultFileData, record.value().getExecutionName()),
+//                        record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+                insertRecordExecutionResult(record.key(), new RecordExecutionResult(resultFileData, record.value().getExecutionName()));
             } catch (RdfDeserializationException | RdfSerializationException e) {
                 LOGGER.warn("Exception during enrichment of record: key:{}, Exception e: {}", record.key(), e);
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
-                        record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()));
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+//                        record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
             }
         } else {
             LOGGER.warn("Task was dropped: key:{}", record.key());
-            context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
-                    record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//            context.forward(new Record<>(record.key(),
+//                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
+//                    record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+            insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()));
         }
     }
 

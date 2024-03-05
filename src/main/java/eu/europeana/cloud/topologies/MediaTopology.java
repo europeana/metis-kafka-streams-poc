@@ -19,9 +19,10 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import static eu.europeana.cloud.commons.TopologyNodeNames.*;
+import static eu.europeana.cloud.commons.TopologyNodeNames.MEDIA_PROCESSOR_NAME;
+import static eu.europeana.cloud.commons.TopologyNodeNames.MEDIA_TOPOLOGY_SOURCE_NAME;
 import static eu.europeana.cloud.commons.TopologyPropertyKeys.KAFKA_HOSTS;
-import static eu.europeana.cloud.commons.TopologyTopicNames.*;
+import static eu.europeana.cloud.commons.TopologyTopicNames.MEDIA_SOURCE_TOPIC_NAME;
 
 public class MediaTopology {
     private static final Logger LOGGER = LoggerFactory.getLogger(MediaTopology.class);
@@ -63,9 +64,9 @@ public class MediaTopology {
         ) {
             topology.addSource(MEDIA_TOPOLOGY_SOURCE_NAME, recordExecutionKeySerde.deserializer(), recordExecutionSerde.deserializer(), MEDIA_SOURCE_TOPIC_NAME);
             topology.addProcessor(MEDIA_PROCESSOR_NAME, () -> new MediaProcessor(properties), MEDIA_TOPOLOGY_SOURCE_NAME);
-            topology.addSink(MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), MEDIA_PROCESSOR_NAME);
-            topology.addSink(MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
-                    MEDIA_PROCESSOR_NAME);
+//            topology.addSink(MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), MEDIA_PROCESSOR_NAME);
+//            topology.addSink(MEDIA_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
+//                    MEDIA_PROCESSOR_NAME);
             return topology;
         }
     }
@@ -79,7 +80,7 @@ public class MediaTopology {
             properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(KAFKA_HOSTS));
             properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
             properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         } catch (FileNotFoundException e) {
             LOGGER.error("Property file not found", e);
         }

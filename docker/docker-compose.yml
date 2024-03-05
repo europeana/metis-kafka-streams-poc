@@ -79,19 +79,6 @@ services:
       - kafka-1
       - kafka-2
 
-  schema-registry:
-    image: docker.io/bitnami/schema-registry:7.3
-    ports:
-      - "8081:8081"
-    depends_on:
-      - kafka-0
-      - kafka-1
-      - kafka-2
-    environment:
-      - SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8081
-      - SCHEMA_REGISTRY_KAFKA_BROKERS=PLAINTEXT://kafka-0:9092,PLAINTEXT://kafka-1:9092,PLAINTEXT://kafka-2:9092
-      - SCHEMA_REGISTRY_HOST_NAME=schema-registry
-
 
   connect:
     image: debezium/connect:2.5
@@ -101,7 +88,6 @@ services:
       - kafka-0
       - kafka-1
       - kafka-2
-      - schema-registry
       - postgres
     ports:
       - "8083:8083"

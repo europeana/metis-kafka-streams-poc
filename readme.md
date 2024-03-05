@@ -38,7 +38,7 @@ records or exception inside appropriate kafka queues.
 
 **To access kafka queues go to http://localhost:9000**
 
-**To access kafka connect connectors go to http://localhost:8083/connectors**
+**To access kafka connect connectors go to http://localhost:8083/connectors or http://localhost:8080**
 
 **After trying to rerun topology there might be some delay before it gets active again since it needs to read some
 metadata from queue**

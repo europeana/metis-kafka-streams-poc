@@ -19,9 +19,10 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import static eu.europeana.cloud.commons.TopologyNodeNames.*;
+import static eu.europeana.cloud.commons.TopologyNodeNames.INDEXING_PROCESSOR_NAME;
+import static eu.europeana.cloud.commons.TopologyNodeNames.INDEXING_TOPOLOGY_SOURCE_NAME;
 import static eu.europeana.cloud.commons.TopologyPropertyKeys.KAFKA_HOSTS;
-import static eu.europeana.cloud.commons.TopologyTopicNames.*;
+import static eu.europeana.cloud.commons.TopologyTopicNames.INDEXING_SOURCE_TOPIC_NAME;
 
 public class IndexingTopology {
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexingTopology.class);
@@ -63,9 +64,9 @@ public class IndexingTopology {
         ) {
             topology.addSource(INDEXING_TOPOLOGY_SOURCE_NAME, recordExecutionKeySerde.deserializer(), recordExecutionSerde.deserializer(), INDEXING_SOURCE_TOPIC_NAME);
             topology.addProcessor(INDEXING_PROCESSOR_NAME, () -> new IndexingProcessor(properties), INDEXING_TOPOLOGY_SOURCE_NAME);
-            topology.addSink(INDEXING_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), INDEXING_PROCESSOR_NAME);
-            topology.addSink(INDEXING_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
-                    INDEXING_PROCESSOR_NAME);
+//            topology.addSink(INDEXING_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), INDEXING_PROCESSOR_NAME);
+//            topology.addSink(INDEXING_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
+//                    INDEXING_PROCESSOR_NAME);
             return topology;
         }
     }
@@ -79,7 +80,7 @@ public class IndexingTopology {
             properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(KAFKA_HOSTS));
             properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
             properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         } catch (FileNotFoundException e) {
             LOGGER.error("Property file not found", e);
         }

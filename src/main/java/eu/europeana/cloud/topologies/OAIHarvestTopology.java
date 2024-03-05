@@ -22,7 +22,7 @@ import java.util.concurrent.CountDownLatch;
 
 import static eu.europeana.cloud.commons.TopologyNodeNames.*;
 import static eu.europeana.cloud.commons.TopologyPropertyKeys.KAFKA_HOSTS;
-import static eu.europeana.cloud.commons.TopologyTopicNames.*;
+import static eu.europeana.cloud.commons.TopologyTopicNames.OAI_HARVEST_SOURCE_TOPIC_NAME;
 
 public class OAIHarvestTopology {
     private static final Logger LOGGER = LoggerFactory.getLogger(OAIHarvestTopology.class);
@@ -66,9 +66,9 @@ public class OAIHarvestTopology {
             topology.addSource(OAI_HARVEST_TOPOLOGY_SOURCE_NAME, recordExecutionKeySerde.deserializer(), recordExecutionSerde.deserializer(), OAI_HARVEST_SOURCE_TOPIC_NAME);
             topology.addProcessor(OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME, () -> new HeaderExtractorProcessor(properties), OAI_HARVEST_TOPOLOGY_SOURCE_NAME);
             topology.addProcessor(OAI_HARVEST_HARVESTER_PROCESSOR_NAME, () -> new HarvesterProcessor(properties), OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME);
-            topology.addSink(OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), OAI_HARVEST_HARVESTER_PROCESSOR_NAME);
-            topology.addSink(OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
-                    OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME, OAI_HARVEST_HARVESTER_PROCESSOR_NAME);
+//            topology.addSink(OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionResultSerde.serializer(), OAI_HARVEST_HARVESTER_PROCESSOR_NAME);
+//            topology.addSink(OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME, DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, recordExecutionKeySerde.serializer(), recordExecutionExceptionSerde.serializer(),
+//                    OAI_HARVEST_HEADER_EXTRACTOR_PROCESSOR_NAME, OAI_HARVEST_HARVESTER_PROCESSOR_NAME);
 
         }
         return topology;
@@ -83,7 +83,7 @@ public class OAIHarvestTopology {
             properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(KAFKA_HOSTS));
             properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
             properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         } catch (FileNotFoundException e) {
             LOGGER.error("Property file not found", e);
         }

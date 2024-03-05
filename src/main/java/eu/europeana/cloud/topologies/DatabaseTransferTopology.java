@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
+import static eu.europeana.cloud.commons.TopologyConstants.DEFAULT_TOPIC_PARTITION_COUNT;
+import static eu.europeana.cloud.commons.TopologyConstants.DEFAULT_TOPIC_REPLICATION_FACTOR;
 import static eu.europeana.cloud.commons.TopologyNodeNames.*;
 import static eu.europeana.cloud.commons.TopologyPropertyKeys.KAFKA_HOSTS;
 import static eu.europeana.cloud.commons.TopologyTopicNames.*;
@@ -61,16 +63,16 @@ public class DatabaseTransferTopology {
 
     private static void createTopics(Properties properties) {
         try (Admin admin = Admin.create(properties)) {
-            NewTopic databaseTransferRecordExecutionTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_TOPIC_NAME, 1, (short) 1);
-            NewTopic databaseTransferRecordExecutionResultTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, 1, (short) 1);
-            NewTopic databaseTransferRecordExecutionExceptionTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, 1, (short) 1);
-            NewTopic oaiHarvestTopic = new NewTopic(OAI_HARVEST_SOURCE_TOPIC_NAME, 1, (short) 3);
-            NewTopic validationTopic = new NewTopic(VALIDATION_SOURCE_TOPIC_NAME, 1, (short) 3);
-            NewTopic mediaTopic = new NewTopic(MEDIA_SOURCE_TOPIC_NAME, 1, (short) 3);
-            NewTopic transformationTopic = new NewTopic(TRANSFORMATION_SOURCE_TOPIC_NAME, 1, (short) 3);
-            NewTopic enrichmentTopic = new NewTopic(ENRICHMENT_SOURCE_TOPIC_NAME, 1, (short) 3);
-            NewTopic normalizationTopic = new NewTopic(NORMALIZATION_SOURCE_TOPIC_NAME, 1, (short) 3);
-            NewTopic indexingTopic = new NewTopic(INDEXING_SOURCE_TOPIC_NAME, 1, (short) 3);
+            NewTopic databaseTransferRecordExecutionTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            NewTopic databaseTransferRecordExecutionResultTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            NewTopic databaseTransferRecordExecutionExceptionTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            NewTopic oaiHarvestTopic = new NewTopic(OAI_HARVEST_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            NewTopic validationTopic = new NewTopic(VALIDATION_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            NewTopic mediaTopic = new NewTopic(MEDIA_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            NewTopic transformationTopic = new NewTopic(TRANSFORMATION_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            NewTopic enrichmentTopic = new NewTopic(ENRICHMENT_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            NewTopic normalizationTopic = new NewTopic(NORMALIZATION_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            NewTopic indexingTopic = new NewTopic(INDEXING_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
             CreateTopicsOptions topicsOptions = new CreateTopicsOptions()
                     .retryOnQuotaViolation(false);
             CreateTopicsResult createTopicsResult = admin.createTopics(List.of(
@@ -95,7 +97,6 @@ public class DatabaseTransferTopology {
             }
         }
     }
-
     private static Topology buildTopology() {
         Topology topology = new Topology();
         try (RecordExecutionSerde recordExecutionSerde = new RecordExecutionSerde();
@@ -122,7 +123,7 @@ public class DatabaseTransferTopology {
             properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "database-queue-reader");
             properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
             properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         } catch (FileNotFoundException e) {
             LOGGER.error("Property file not found", e);
             throw new RuntimeException(e);

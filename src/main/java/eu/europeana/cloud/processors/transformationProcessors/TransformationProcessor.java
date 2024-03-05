@@ -16,8 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static eu.europeana.cloud.commons.ExecutionPropertyKeys.*;
-import static eu.europeana.cloud.commons.TopologyNodeNames.TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
-import static eu.europeana.cloud.commons.TopologyNodeNames.TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME;
 
 public class TransformationProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransformationProcessor.class);
@@ -46,21 +44,25 @@ public class TransformationProcessor extends CommonProcessor implements Processo
                 StringWriter writer = xsltTransformer.transform(recordData, prepareEuropeanaGeneratedIdsMap(recordData, record.key()));
                 String result = writer.toString();
                 LOGGER.info("Transformation success for record: key:{} value:{}", record.key(), record.value());
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionResult(result,
-                                record.value().getExecutionName()),
-                        record.timestamp()), TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionResult(result,
+//                                record.value().getExecutionName()),
+//                        record.timestamp()), TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+                insertRecordExecutionResult(record.key(), new RecordExecutionResult(result,
+                        record.value().getExecutionName()));
             } catch (TransformationException | EuropeanaIdException e) {
                 LOGGER.info("Exception occurred during transformation for record: key:{}, Exception e: {}", record.key(), e);
-                context.forward(new Record<>(record.key(),
-                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
-                        record.timestamp()), TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//                context.forward(new Record<>(record.key(),
+//                        new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()),
+//                        record.timestamp()), TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), e.getClass().getName(), e.getMessage()));
             }
         } else {
             LOGGER.warn("Task was dropped: key:{}", record.key());
-            context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
-                    record.timestamp()), TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+//            context.forward(new Record<>(record.key(),
+//                    new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
+//                    record.timestamp()), TRANSFORMATION_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+            insertRecordExecutionException(record.key(), new RecordExecutionException(record.value().getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()));
         }
     }
 
