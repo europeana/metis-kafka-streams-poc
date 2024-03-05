@@ -12,6 +12,7 @@ import eu.europeana.cloud.service.dps.metis.indexing.TargetIndexingDatabase;
 import eu.europeana.cloud.service.dps.service.utils.indexing.IndexWrapper;
 import eu.europeana.indexing.IndexingProperties;
 import eu.europeana.indexing.exception.IndexingException;
+import eu.europeana.indexing.tiers.model.MediaTier;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.api.Record;
