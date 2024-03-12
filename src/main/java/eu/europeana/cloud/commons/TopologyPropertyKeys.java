@@ -14,6 +14,8 @@ public class TopologyPropertyKeys {
     public static final String ENTITY_MANAGEMENT_URL = "ENTITY_MANAGEMENT_URL";
     public static final String ENTITY_API_URL = "ENTITY_API_URL";
     public static final String ENTITY_API_KEY = "ENTITY_API_KEY";
+    public static final String TOPOLOGY_TOPIC_PARTITION_COUNT = "TOPIC_PARTITION_COUNT";
+    public static final String TOPOLOGY_REPLICATION_FACTOR_COUNT = "TOPIC_REPLICATION_FACTOR";
 
     private TopologyPropertyKeys() {
     }

@@ -25,7 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import static eu.europeana.cloud.commons.TopologyConstants.DEFAULT_TOPIC_PARTITION_COUNT;
 import static eu.europeana.cloud.commons.TopologyConstants.DEFAULT_TOPIC_REPLICATION_FACTOR;
 import static eu.europeana.cloud.commons.TopologyNodeNames.*;
-import static eu.europeana.cloud.commons.TopologyPropertyKeys.KAFKA_HOSTS;
+import static eu.europeana.cloud.commons.TopologyPropertyKeys.*;
 import static eu.europeana.cloud.commons.TopologyTopicNames.*;
 import static java.lang.Thread.sleep;
 
@@ -63,16 +63,24 @@ public class DatabaseTransferTopology {
 
     private static void createTopics(Properties properties) {
         try (Admin admin = Admin.create(properties)) {
-            NewTopic databaseTransferRecordExecutionTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
-            NewTopic databaseTransferRecordExecutionResultTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
-            NewTopic databaseTransferRecordExecutionExceptionTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
-            NewTopic oaiHarvestTopic = new NewTopic(OAI_HARVEST_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
-            NewTopic validationTopic = new NewTopic(VALIDATION_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
-            NewTopic mediaTopic = new NewTopic(MEDIA_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
-            NewTopic transformationTopic = new NewTopic(TRANSFORMATION_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
-            NewTopic enrichmentTopic = new NewTopic(ENRICHMENT_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
-            NewTopic normalizationTopic = new NewTopic(NORMALIZATION_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
-            NewTopic indexingTopic = new NewTopic(INDEXING_SOURCE_TOPIC_NAME, DEFAULT_TOPIC_PARTITION_COUNT, (short) DEFAULT_TOPIC_REPLICATION_FACTOR);
+            int topicPartitions = DEFAULT_TOPIC_PARTITION_COUNT;
+            if (properties.getProperty(TOPOLOGY_TOPIC_PARTITION_COUNT) != null) {
+                topicPartitions = Integer.parseInt(properties.getProperty(TOPOLOGY_TOPIC_PARTITION_COUNT));
+            }
+            int topicReplicationFactor = DEFAULT_TOPIC_REPLICATION_FACTOR;
+            if (properties.getProperty(TOPOLOGY_REPLICATION_FACTOR_COUNT) != null) {
+                topicPartitions = Integer.parseInt(properties.getProperty(TOPOLOGY_REPLICATION_FACTOR_COUNT));
+            }
+            NewTopic databaseTransferRecordExecutionTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
+            NewTopic databaseTransferRecordExecutionResultTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_RESULT_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
+            NewTopic databaseTransferRecordExecutionExceptionTopic = new NewTopic(DATABASE_TRANSFER_RECORD_EXECUTION_EXCEPTION_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
+            NewTopic oaiHarvestTopic = new NewTopic(OAI_HARVEST_SOURCE_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
+            NewTopic validationTopic = new NewTopic(VALIDATION_SOURCE_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
+            NewTopic mediaTopic = new NewTopic(MEDIA_SOURCE_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
+            NewTopic transformationTopic = new NewTopic(TRANSFORMATION_SOURCE_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
+            NewTopic enrichmentTopic = new NewTopic(ENRICHMENT_SOURCE_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
+            NewTopic normalizationTopic = new NewTopic(NORMALIZATION_SOURCE_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
+            NewTopic indexingTopic = new NewTopic(INDEXING_SOURCE_TOPIC_NAME, topicPartitions, (short) topicReplicationFactor);
             CreateTopicsOptions topicsOptions = new CreateTopicsOptions()
                     .retryOnQuotaViolation(false);
             CreateTopicsResult createTopicsResult = admin.createTopics(List.of(
