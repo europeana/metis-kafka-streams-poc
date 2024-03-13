@@ -1,5 +1,6 @@
 package eu.europeana.cloud.topologies;
 
+import eu.europeana.cloud.commons.PropertiesUtil;
 import eu.europeana.cloud.processors.normalizationProcessors.NormalizationProcessor;
 import eu.europeana.cloud.serdes.RecordExecutionExceptionSerde;
 import eu.europeana.cloud.serdes.RecordExecutionKeySerde;
@@ -13,8 +14,6 @@ import org.apache.kafka.streams.Topology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -29,7 +28,9 @@ public class NormalizationTopology {
 
 
     public static void main(String[] args) throws IOException {
-        Properties props = readProperties();
+        String providedPropertyFilename = "";
+        if (args.length > 0) providedPropertyFilename = args[0];
+        Properties props = readProperties(providedPropertyFilename);
         final Topology topology = buildTopology(props);
 
 
@@ -73,19 +74,13 @@ public class NormalizationTopology {
         return topology;
     }
 
-    private static Properties readProperties() throws IOException {
-        Properties properties = new Properties();
-        try (FileInputStream fis = new FileInputStream(Thread.currentThread().getContextClassLoader()
-                .getResource("normalizationTopology.properties").getPath())) {
-            properties.load(fis);
-            properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "normalization-topology");
-            properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(KAFKA_HOSTS));
-            properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-            properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        } catch (FileNotFoundException e) {
-            LOGGER.error("Property file not found", e);
-        }
+    private static Properties readProperties(String providedPropertyFilename) throws IOException {
+        Properties properties = PropertiesUtil.getProperties("normalizationTopology.properties", providedPropertyFilename);
+        properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "normalization-topology");
+        properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(KAFKA_HOSTS));
+        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return properties;
     }
 }

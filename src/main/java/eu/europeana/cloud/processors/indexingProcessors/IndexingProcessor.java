@@ -83,7 +83,7 @@ public class IndexingProcessor extends CommonProcessor implements Processor<Reco
         String recordData = record.value().getRecordData();
         TargetIndexingDatabase database = TargetIndexingDatabase.valueOf(taskParameters.get(INDEXING_TARGET_DATABASE).getAsString());
         indexWrapper.getIndexer(database).index(recordData, executionIndexingProperties, tier -> {
-            suitableForPublication.set((database == TargetIndexingDatabase.PREVIEW));//|| (tier.getMetadataTier() != MediaTier.T0));
+            suitableForPublication.set((database == TargetIndexingDatabase.PREVIEW));// || (tier.getMetadataTier() != MediaTier.T0);
             return suitableForPublication.get();
         });
         return suitableForPublication;
