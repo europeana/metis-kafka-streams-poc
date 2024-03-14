@@ -123,9 +123,9 @@ public class DatabaseTransferTopology {
     }
 
     private static Properties readProperties(String providedPropertyFilename) throws IOException {
-        Properties properties = PropertiesUtil.getProperties("databaseQueueReader.properties", providedPropertyFilename);
+        Properties properties = PropertiesUtil.getProperties("databaseTransferTopology.properties", providedPropertyFilename);
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(KAFKA_HOSTS));
-        properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "database-queue-reader");
+        properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "database-transfer-topology");
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");

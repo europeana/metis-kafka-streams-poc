@@ -75,7 +75,7 @@ public class EnrichmentTopology {
     }
 
     private static Properties readProperties(String providedPropertyFilename) throws IOException {
-        Properties properties = PropertiesUtil.getProperties("oenrichmentTopology.properties", providedPropertyFilename);
+        Properties properties = PropertiesUtil.getProperties("enrichmentTopology.properties", providedPropertyFilename);
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "enrichment-topology");
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(KAFKA_HOSTS));
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());

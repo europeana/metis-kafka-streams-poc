@@ -9,6 +9,7 @@ import eu.europeana.cloud.service.dps.metis.indexing.TargetIndexingDatabase;
 import eu.europeana.cloud.service.dps.service.utils.indexing.IndexWrapper;
 import eu.europeana.indexing.IndexingProperties;
 import eu.europeana.indexing.exception.IndexingException;
+import eu.europeana.indexing.tiers.model.MediaTier;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.api.Record;
@@ -83,7 +84,7 @@ public class IndexingProcessor extends CommonProcessor implements Processor<Reco
         String recordData = record.value().getRecordData();
         TargetIndexingDatabase database = TargetIndexingDatabase.valueOf(taskParameters.get(INDEXING_TARGET_DATABASE).getAsString());
         indexWrapper.getIndexer(database).index(recordData, executionIndexingProperties, tier -> {
-            suitableForPublication.set((database == TargetIndexingDatabase.PREVIEW));// || (tier.getMetadataTier() != MediaTier.T0);
+            suitableForPublication.set((database == TargetIndexingDatabase.PREVIEW) || (tier.getMediaTier() != MediaTier.T0));
             return suitableForPublication.get();
         });
         return suitableForPublication;

@@ -26,13 +26,14 @@ public class CommonProcessor {
             String databaseHost = properties.getProperty(DATABASE_HOST);
             String databasePort = properties.getProperty(DATABASE_PORT);
             String databaseUrl = String.format("jdbc:postgresql://%s:%s/%s", databaseHost, databasePort, databaseName);
+            Class.forName("org.postgresql.Driver");
             connection = DriverManager.getConnection(databaseUrl, databaseUser, databasePassword);
             LOGGER.info("Connected to database successfully");
             taskStatusStatement = connection.prepareStatement("select status from execution_status where execution_id = ?");
             insertRecordExecutionResultStatement = connection.prepareStatement("insert into record_execution_result (dataset_id, execution_id, record_id, record_result_data, execution_name) values (?, ?, ?, ?, ?)");
             insertRecordExecutionExceptionStatement = connection.prepareStatement("insert into record_execution_exception (dataset_id, execution_id, record_id, execution_name, exception_name, exception_content) values (?, ?, ?, ?, ?, ?)");
             LOGGER.info("Prepared statement successfully");
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             LOGGER.warn("Error connecting to database: {}", e.getMessage());
             throw new RuntimeException(e);
         }

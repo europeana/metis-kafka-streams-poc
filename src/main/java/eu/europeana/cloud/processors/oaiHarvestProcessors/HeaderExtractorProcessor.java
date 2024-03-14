@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static eu.europeana.cloud.commons.ExecutionPropertyKeys.*;
-import static eu.europeana.cloud.commons.TopologyNodeNames.OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME;
 import static eu.europeana.cloud.commons.TopologyNodeNames.OAI_HARVEST_HARVESTER_PROCESSOR_NAME;
 
 public class HeaderExtractorProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecutionProduct, RecordExecutionKey, RecordExecutionProduct> {
@@ -66,16 +65,18 @@ public class HeaderExtractorProcessor extends CommonProcessor implements Process
                 });
             } catch (HarvesterException | IOException e) {
                 LOGGER.warn("Error processing oai record. key : {} value: {}", record.key(), record.value(), e);
-                context.forward(new Record<>(
-                        record.key(),
-                        new RecordExecutionException(recordExecution.getExecutionName(), e.getClass().getName(), e.getMessage()),
-                        record.timestamp()), OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+                insertRecordExecutionException(record.key(), new RecordExecutionException(recordExecution.getExecutionName(), e.getClass().getName(), e.getMessage()));
+//                context.forward(new Record<>(
+//                        record.key(),
+//                        new RecordExecutionException(recordExecution.getExecutionName(), e.getClass().getName(), e.getMessage()),
+//                        record.timestamp()), OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
             }
         } else {
             LOGGER.warn("Task was dropped: key:{}", record.key());
-            context.forward(new Record<>(record.key(),
-                    new RecordExecutionException(((RecordExecution) record.value()).getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
-                    record.timestamp()), OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
+            insertRecordExecutionException(record.key(), new RecordExecutionException(((RecordExecution) record.value()).getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()));
+//            context.forward(new Record<>(record.key(),
+//                    new RecordExecutionException(((RecordExecution) record.value()).getExecutionName(), TaskDroppedException.class.getName(), new TaskDroppedException().getMessage()),
+//                    record.timestamp()), OAI_HARVEST_DATABASE_TRANSFER_EXECUTION_EXCEPTION_SINK_NAME);
         }
     }
 

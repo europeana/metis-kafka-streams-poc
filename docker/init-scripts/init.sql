@@ -1,4 +1,6 @@
 -- init.sql
+ALTER
+SYSTEM SET wal_level = logical;
 
 -- Create the base table: record_execution
 CREATE TABLE IF NOT EXISTS record_execution
@@ -75,17 +77,6 @@ CREATE TABLE IF NOT EXISTS record_execution_exception
     dataset_id,
     execution_id,
     record_id
-), -- Define a composite primary key
-    FOREIGN KEY
-(
-    dataset_id,
-    execution_id,
-    record_id
-) REFERENCES record_execution
-(
-    dataset_id,
-    execution_id,
-    record_id
 )
     );
 
@@ -110,17 +101,6 @@ CREATE TABLE IF NOT EXISTS record_execution_result
     255
 ),
     PRIMARY KEY
-(
-    dataset_id,
-    execution_id,
-    record_id
-), -- Define a composite primary key
-    FOREIGN KEY
-(
-    dataset_id,
-    execution_id,
-    record_id
-) REFERENCES record_execution
 (
     dataset_id,
     execution_id,
