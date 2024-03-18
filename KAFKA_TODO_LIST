@@ -1,8 +1,0 @@
-1. Investigate metric tools available in kafka-streams. I know that it reports metrics via beans that are accessible inside JMX instance and to some extent during runtime via API, but it also supports add some sort of plugins. Read more (https://docs.confluent.io/platform/current/streams/monitoring.html#)
-2. Investigate kafka streams deployment on cluster. As far as I know parallelism is highly scalable via topic partitions. We can run as many instances in paraller how many we set our partitioning to.
-Thanks to empty key, we assure that load is evenly distributed among all nodes.
-3. Improve notification solution based on KeyValueStore. Due to how complex it is currently implemented in ecloud, I couldn't make in time full replication, and I didn't really want to copy it so I decided to postpone creating it till the end.
-In my opinion that solution will be very similar to ecloud but querying will be condensed into sessions that increment counters not by one but by multiple at the time. And we won't be limited to one thread but it will be limited to one thread per partition.
-4. Improve error handling in regards to general project but also in regards to deserialization issues and global error handling because right now not handled manually exceptions are freezing whole kafka streams
-5. Investigate error recovery because in practice it looks good thanks to kafka store and kafka queue commit logs but in practice I didn't really test its limits
-6. Some functions such as "Marked as deleted" are yet to be implemented
