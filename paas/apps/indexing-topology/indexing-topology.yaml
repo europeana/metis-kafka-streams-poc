@@ -1,0 +1,46 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  labels:
+    app: indexing-topology
+    component: indexing-topology
+  name: indexing-topology
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: indexing-topology
+  serviceName: indexing-topology
+  template:
+    metadata:
+      labels:
+        name: indexing-topology
+        app: indexing-topology
+    spec:
+      containers:
+        - name: indexing-topology
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-kafka-app:latest
+          command: [ "sh", "-c", "java $(JVM_OPTIONS) -cp kafka-app.jar eu.europeana.cloud.topologies.IndexingTopology /config/indexing.properties" ]
+          env:
+            - name: JVM_OPTIONS
+              value: "--add-opens java.base/java.lang=ALL-UNNAMED \
+              --add-opens java.base/java.util.stream=ALL-UNNAMED \
+              --add-opens java.base/java.util=ALL-UNNAMED \
+               --add-opens java.base/java.time=ALL-UNNAMED \
+               --add-opens java.base/java.net=ALL-UNNAMED \
+               --add-opens java.base/java.util.concurrent=ALL-UNNAMED \
+               --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED"
+          volumeMounts:
+            - mountPath: /config
+              name: indexing-topology-config-volume
+          resources:
+            limits:
+              cpu: "900m"
+              memory: 2Gi
+            requests:
+              cpu: "450m"
+              memory: 1500Mi
+      volumes:
+        - name: indexing-topology-config-volume
+          configMap:
+            name: indexing-topology-config

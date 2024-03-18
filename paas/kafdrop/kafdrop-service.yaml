@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kafdrop
+  name: kafdrop-service
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app: kafdrop
+  sessionAffinity: None
+  type: LoadBalancer

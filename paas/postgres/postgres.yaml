@@ -1,0 +1,46 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  labels:
+    app: postgres
+    component: postgres
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: postgres
+  serviceName: postgres
+  template:
+    metadata:
+      labels:
+        name: postgres
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-postgres:latest
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "postgres"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_DB
+              value: "poc-db"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql
+              name: postgres-volume
+          resources:
+            limits:
+              cpu: "2"
+              memory: 3Gi
+            requests:
+              cpu: "1"
+              memory: 1.5Gi
+      volumes:
+        - name: postgres-volume
+          persistentVolumeClaim:
+            claimName: postgres-volume

@@ -1,0 +1,47 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: indexing-topology-config
+  labels:
+    app: indexing-topology
+    name: indexing-topology
+data:
+  indexing.properties: |-
+    KAFKA_HOSTS=kafka-0.kafka:9092,kafka-1.kafka:9092,kafka-2.kafka:9092
+    DB_ADDRESS=postgres-0.postgres
+    DB_PORT=5432
+    DB_NAME=poc-db
+    DB_USER=postgres
+    DB_PASSWORD=postgres
+    indexing.preview.mongoInstances=test-acc-1-metis.eanadev.org,test-acc-2-metis.eanadev.org,test-acc-3-metis.eanadev.org
+    indexing.preview.mongoPortNumber=27027
+    indexing.preview.mongoDbName=metis-preview-test
+    indexing.preview.mongoRedirectsDbName=metis-redirect-preview-test
+    indexing.preview.mongoUsername=metis_test
+    indexing.preview.mongoPassword=DnR7T3eru3InbT
+    indexing.preview.mongoAuthDB=admin
+    indexing.preview.mongoUseSSL=false
+    indexing.preview.mongoReadPreference=PRIMARY_PREFERRED
+    indexing.preview.mongoPoolSize=32
+    indexing.preview.solrInstances=test-acc-1-metis.eanadev.org:9292/search_test_preview,test-acc-2-metis.eanadev.org:9292/search_test_preview,test-acc-3-metis.eanadev.org:9292/search_test_preview
+    indexing.preview.zookeeperInstances=test-acc-1-metis.eanadev.org,test-acc-2-metis.eanadev.org,test-acc-3-metis.eanadev.org
+    indexing.preview.zookeeperPortNumber=2282
+    indexing.preview.zookeeperChroot=
+    indexing.preview.zookeeperDefaultCollection=search_test_preview
+    indexing.preview.mongoApplicationName=metis-indexing-client-test-preview
+    indexing.publish.mongoInstances=test-acc-1-metis.eanadev.org,test-acc-2-metis.eanadev.org,test-acc-3-metis.eanadev.org
+    indexing.publish.mongoPortNumber=27027
+    indexing.publish.mongoDbName=metis-publish-test
+    indexing.publish.mongoRedirectsDbName=metis-redirect-publish-test
+    indexing.publish.mongoUsername=metis_test
+    indexing.publish.mongoPassword=DnR7T3eru3InbT
+    indexing.publish.mongoAuthDB=admin
+    indexing.publish.mongoUseSSL=false
+    indexing.publish.mongoReadPreference=PRIMARY_PREFERRED
+    indexing.publish.mongoPoolSize=32
+    indexing.publish.mongoApplicationName=metis-indexing-client-test-publish
+    indexing.publish.solrInstances=http://test-acc-1-metis.eanadev.org:9292/search_test_publish,http://test-acc-2-metis.eanadev.org:9292/search_test_publish,http://test-acc-3-metis.eanadev.org:9292/search_test_publish
+    indexing.publish.zookeeperInstances=test-acc-1-metis.eanadev.org,test-acc-2-metis.eanadev.org,test-acc-3-metis.eanadev.org
+    indexing.publish.zookeeperPortNumber=2282
+    indexing.publish.zookeeperChroot=
+    indexing.publish.zookeeperDefaultCollection=search_test_publish

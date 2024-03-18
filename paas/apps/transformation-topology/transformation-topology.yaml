@@ -1,0 +1,46 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  labels:
+    app: transformation-topology
+    component: transformation-topology
+  name: transformation-topology
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: transformation-topology
+  serviceName: transformation-topology
+  template:
+    metadata:
+      labels:
+        name: transformation-topology
+        app: transformation-topology
+    spec:
+      containers:
+        - name: transformation-topology
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-kafka-app:latest
+          command: [ "sh", "-c", "java $(JVM_OPTIONS) -cp kafka-app.jar eu.europeana.cloud.topologies.TransformationTopology /config/transformation.properties" ]
+          env:
+            - name: JVM_OPTIONS
+              value: "--add-opens java.base/java.lang=ALL-UNNAMED \
+                            --add-opens java.base/java.util.stream=ALL-UNNAMED \
+                            --add-opens java.base/java.util=ALL-UNNAMED \
+                             --add-opens java.base/java.time=ALL-UNNAMED \
+                             --add-opens java.base/java.net=ALL-UNNAMED \
+                             --add-opens java.base/java.util.concurrent=ALL-UNNAMED \
+                             --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED"
+          volumeMounts:
+            - mountPath: /config
+              name: transformation-topology-config-volume
+          resources:
+            limits:
+              cpu: "900m"
+              memory: 2Gi
+            requests:
+              cpu: "450m"
+              memory: 1500Mi
+      volumes:
+        - name: transformation-topology-config-volume
+          configMap:
+            name: transformation-topology-config

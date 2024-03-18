@@ -1,0 +1,81 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  labels:
+    app: kafka
+    component: kafka
+  name: kafka
+spec:
+  podManagementPolicy: Parallel
+  replicas: 3
+  selector:
+    matchLabels:
+      name: kafka
+      app: kafka
+  serviceName: kafka
+  template:
+    metadata:
+      labels:
+        name: kafka
+        app: kafka
+    spec:
+      initContainers:
+        - name: kafka-init
+          image: bitnami/minideb:latest
+          volumeMounts:
+            - name: kafka-config-volume
+              mountPath: /config-shared
+            - name: kafka-pod-config-volume
+              mountPath: /config
+          env:
+            - name: POD_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - |
+              cp /config-shared/server.properties /config/server.properties;
+              export BROKER_ID=$(echo $POD_ID | cut -d'-' -f2 );
+              echo -en "\nbroker.id=$BROKER_ID" >> /config/server.properties;
+              echo -en "\nadvertised.listeners=PLAINTEXT://kafka-$BROKER_ID.kafka:9092" >> /config/server.properties;
+              cat /config/server.properties;
+      containers:
+        - name: kafka
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-kafka:latest
+          ports:
+            - containerPort: 9092
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /bitnami/kafka/data
+              name: kafka-pod-data-volume
+            - mountPath: /bitnami/kafka/config
+              name: kafka-pod-config-volume
+          resources:
+            limits:
+              cpu: "1500m"
+              memory: 3Gi
+            requests:
+              cpu: "1"
+              memory: 2Gi
+      volumes:
+        - name: kafka-config-volume
+          configMap:
+            name: kafka-config
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-pod-data-volume
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "20Gi"
+    - metadata:
+        name: kafka-pod-config-volume
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "100Mi"

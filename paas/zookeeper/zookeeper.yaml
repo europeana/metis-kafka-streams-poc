@@ -1,0 +1,52 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  labels:
+    app: zookeeper
+    component: zookeeper
+  name: zookeeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: zookeeper
+  serviceName: zookeeper
+  template:
+    metadata:
+      labels:
+        name: zookeeper
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-zookeeper:latest
+          ports:
+            - containerPort: 2181
+              protocol: TCP
+            - containerPort: 2888
+              protocol: TCP
+            - containerPort: 3888
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+          volumeMounts:
+            - mountPath: /bitnami/zookeeper/data
+              name: zoo-volume
+              subPath: data
+            - mountPath: /bitnami/zookeeper/logs
+              name: zoo-volume
+              subPath: logs
+          resources:
+            limits:
+              cpu: "600m"
+              memory: 1536Mi
+            requests:
+              cpu: "300m"
+              memory: 1Gi
+      volumes:
+        - name: zoo-volume
+          persistentVolumeClaim:
+            claimName: zookeeper-volume
