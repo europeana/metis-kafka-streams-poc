@@ -56,6 +56,7 @@ public class EnrichmentProcessor extends CommonProcessor implements Processor<Re
     @Override
     public void process(Record<RecordExecutionKey, RecordExecution> record) {
         if (!isTaskDropped(record.key().getExecutionId())) {
+            LOGGER.info("Received enrichment topology record {}", record.key());
             ProcessedResult<String> results = enrichmentWorker.process(record.value().getRecordData());
             if (results.getRecordStatus() == ProcessedResult.RecordStatus.CONTINUE) {
 //                context.forward(new Record<>(record.key(),
@@ -64,6 +65,7 @@ public class EnrichmentProcessor extends CommonProcessor implements Processor<Re
 //                        record.timestamp()), ENRICHMENT_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
                 insertRecordExecutionResult(record.key(), new RecordExecutionResult(results.getProcessedRecord(),
                         record.value().getExecutionName()));
+                LOGGER.info("Enrichment ended successfully for record {}", record.key());
             } else {
                 Set<Report> enrichmentErrorReports = results.getReport().stream().filter(report -> report.getMessageType() == Type.ERROR).collect(Collectors.toSet());
                 String errorReportContent = enrichmentErrorReports.stream().map(Report::getMessage).collect(Collectors.joining("\n"));

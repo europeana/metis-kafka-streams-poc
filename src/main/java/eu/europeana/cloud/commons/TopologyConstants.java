@@ -10,4 +10,7 @@ public class TopologyConstants {
 
     public static final int DEFAULT_TOPIC_PARTITION_COUNT = 1;
     public static final int DEFAULT_TOPIC_REPLICATION_FACTOR = 3;
+
+    public static final String VALIDATION_TOPOLOGY_EXTERNAL_VALIDATION = "external";
+    public static final String VALIDATION_TOPOLOGY_INTERNAL_VALIDATION = "internal";
 }

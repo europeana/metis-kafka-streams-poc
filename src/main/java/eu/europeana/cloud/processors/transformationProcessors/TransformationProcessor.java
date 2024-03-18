@@ -34,6 +34,7 @@ public class TransformationProcessor extends CommonProcessor implements Processo
     @Override
     public void process(Record<RecordExecutionKey, RecordExecution> record) {
         if (!isTaskDropped(record.key().getExecutionId())) {
+            LOGGER.info("Received transformation topology record {}", record.key());
             JsonObject taskProperties = record.value().getExecutionParameters();
             String xsltUrl = taskProperties.get(TRANSFORMATION_XSLT_URL).getAsString();
             String datasetLanguage = taskProperties.get(TRANSFORMATION_DATASET_LANGUAGE).getAsString();

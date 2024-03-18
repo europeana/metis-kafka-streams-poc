@@ -56,6 +56,7 @@ public class HeaderExtractorProcessor extends CommonProcessor implements Process
                 oaiRecordHeaderIterator.forEach(oaiRecordHeader -> {
                     RecordExecution recordWithHeader = recordExecution;
                     recordWithHeader.setRecordData(gson.toJson(oaiRecordHeader));
+                    LOGGER.info("Extracted header: {} for record: {}", gson.toJson(oaiRecordHeader), record.key());
                     context.forward(new Record<>(
                             record.key(),
                             recordWithHeader,

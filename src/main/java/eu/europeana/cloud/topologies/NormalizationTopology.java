@@ -47,6 +47,7 @@ public class NormalizationTopology {
             });
 
             try {
+                LOGGER.info("Starting normalization topology...");
                 streams.start();
                 latch.await();
             } catch (Throwable e) {

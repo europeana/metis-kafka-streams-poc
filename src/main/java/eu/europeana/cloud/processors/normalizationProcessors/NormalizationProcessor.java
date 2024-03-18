@@ -34,6 +34,7 @@ public class NormalizationProcessor extends CommonProcessor implements Processor
     @Override
     public void process(Record<RecordExecutionKey, RecordExecution> record) {
         if (!isTaskDropped(record.key().getExecutionId())) {
+            LOGGER.info("Received normalization topology record {}", record.key());
             try {
                 NormalizationResult normalizedResult = normalizationFactory.getNormalizer().normalize(record.value().getRecordData());
                 if (normalizedResult.getErrorMessage() != null) {

@@ -47,6 +47,7 @@ public class IndexingTopology {
             });
 
             try {
+                LOGGER.info("Starting indexing topology...");
                 streams.start();
                 latch.await();
             } catch (Throwable e) {

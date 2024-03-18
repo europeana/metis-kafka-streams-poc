@@ -55,6 +55,7 @@ public class MediaProcessor extends CommonProcessor implements Processor<RecordE
     @Override
     public void process(Record<RecordExecutionKey, RecordExecution> record) {
         if (!isTaskDropped(record.key().getExecutionId())) {
+            LOGGER.info("Received media topology record {}", record.key());
             final byte[] rdfBytes = record.value().getRecordData().getBytes(StandardCharsets.UTF_8);
             final EnrichedRdf enrichedRdf;
 
@@ -87,6 +88,7 @@ public class MediaProcessor extends CommonProcessor implements Processor<RecordE
 //                context.forward(new Record<>(record.key(),
 //                        new RecordExecutionResult(resultFileData, record.value().getExecutionName()),
 //                        record.timestamp()), MEDIA_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
+                LOGGER.info("Finished processing record: {}", record.key());
                 insertRecordExecutionResult(record.key(), new RecordExecutionResult(resultFileData, record.value().getExecutionName()));
             } catch (RdfDeserializationException | RdfSerializationException e) {
                 LOGGER.warn("Exception during enrichment of record: key:{}, Exception e: {}", record.key(), e);
@@ -115,11 +117,13 @@ public class MediaProcessor extends CommonProcessor implements Processor<RecordE
 
     private boolean processResourceWithThumbnail(RdfResourceEntry resourceToProcess, String recordId,
                                                  EnrichedRdf rdfForEnrichment, MediaExtractor extractor) {
+        LOGGER.info("Process resource with thumbnail: {}", resourceToProcess.getResourceUrl());
         return processResource(resourceToProcess, recordId, rdfForEnrichment, extractor, true);
     }
 
     private boolean processResourceWithoutThumbnail(RdfResourceEntry resourceToProcess, String recordId,
                                                     EnrichedRdf rdfForEnrichment, MediaExtractor extractor) {
+        LOGGER.info("Process resource without thumbnail: {}", resourceToProcess.getResourceUrl());
         return processResource(resourceToProcess, recordId, rdfForEnrichment, extractor, false);
     }
 

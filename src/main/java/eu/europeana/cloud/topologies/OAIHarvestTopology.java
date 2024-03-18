@@ -47,6 +47,7 @@ public class OAIHarvestTopology {
             });
 
             try {
+                LOGGER.info("Starting oai harvest topology...");
                 streams.start();
                 latch.await();
             } catch (Throwable e) {

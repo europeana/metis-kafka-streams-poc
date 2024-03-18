@@ -47,6 +47,7 @@ public class ValidationTopology {
             });
 
             try {
+                LOGGER.info("Starting validation topology...");
                 streams.start();
                 latch.await();
             } catch (Throwable e) {

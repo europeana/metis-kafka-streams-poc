@@ -19,6 +19,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static eu.europeana.cloud.commons.ExecutionPropertyKeys.VALIDATION_SUB_TYPE;
+import static eu.europeana.cloud.commons.TopologyConstants.VALIDATION_TOPOLOGY_EXTERNAL_VALIDATION;
+import static eu.europeana.cloud.commons.TopologyConstants.VALIDATION_TOPOLOGY_INTERNAL_VALIDATION;
 
 public class ValidationProcessor extends CommonProcessor implements Processor<RecordExecutionKey, RecordExecution, RecordExecutionKey, RecordExecutionProduct> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidationProcessor.class);
@@ -46,21 +48,23 @@ public class ValidationProcessor extends CommonProcessor implements Processor<Re
             JsonObject executionParameters = record.value().getExecutionParameters();
             String validationType;
             if (executionParameters.get(VALIDATION_SUB_TYPE) == null) {
-                validationType = "external";
+                validationType = VALIDATION_TOPOLOGY_EXTERNAL_VALIDATION;
             } else {
                 validationType = executionParameters.get(VALIDATION_SUB_TYPE).getAsString();
             }
             String schema, rootFileLocation, schematronFileLocation;
             switch (validationType) {
-                case "external" -> {
+                case VALIDATION_TOPOLOGY_EXTERNAL_VALIDATION -> {
                     schema = properties.getProperty("predefinedSchemas.edm-external.url");
                     rootFileLocation = properties.getProperty("predefinedSchemas.edm-external.rootLocation");
                     schematronFileLocation = properties.getProperty("predefinedSchemas.edm-external.schematronLocation");
+                    LOGGER.info("Validation type: {} for record: {}", VALIDATION_TOPOLOGY_EXTERNAL_VALIDATION, record.key());
                 }
-                case "internal" -> {
+                case VALIDATION_TOPOLOGY_INTERNAL_VALIDATION -> {
                     schema = properties.getProperty("predefinedSchemas.edm-internal.url");
                     rootFileLocation = properties.getProperty("predefinedSchemas.edm-internal.rootLocation");
                     schematronFileLocation = properties.getProperty("predefinedSchemas.edm-internal.schematronLocation");
+                    LOGGER.info("Validation type: {} for record: {}", VALIDATION_TOPOLOGY_INTERNAL_VALIDATION, record.key());
                 }
                 default -> throw new IllegalStateException("Unexpected validation type: " + validationType);
             }

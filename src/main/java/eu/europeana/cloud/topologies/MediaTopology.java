@@ -47,6 +47,7 @@ public class MediaTopology {
             });
 
             try {
+                LOGGER.info("Starting media topology...");
                 streams.start();
                 latch.await();
             } catch (Throwable e) {

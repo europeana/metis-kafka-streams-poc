@@ -47,6 +47,7 @@ public class EnrichmentTopology {
             });
 
             try {
+                LOGGER.info("Starting enrichment topology...");
                 streams.start();
                 latch.await();
             } catch (Throwable e) {

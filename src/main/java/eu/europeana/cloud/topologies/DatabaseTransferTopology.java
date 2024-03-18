@@ -53,6 +53,7 @@ public class DatabaseTransferTopology {
             });
 
             try {
+                LOGGER.info("Starting database transfer topology...");
                 streams.start();
                 latch.await();
             } catch (Throwable e) {

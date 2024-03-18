@@ -43,6 +43,7 @@ public class IndexingProcessor extends CommonProcessor implements Processor<Reco
     @Override
     public void process(Record<RecordExecutionKey, RecordExecution> record) {
         if (isTaskDropped(record.key().getExecutionId())) {
+            LOGGER.info("Received indexing topology record {}", record.key());
             JsonObject taskParameters = record.value().getExecutionParameters();
             prepareExecutionIndexingProperties(taskParameters);
 
@@ -59,6 +60,7 @@ public class IndexingProcessor extends CommonProcessor implements Processor<Reco
 //                            record.timestamp()), INDEXING_DATABASE_TRANSFER_EXECUTION_RESULTS_SINK_NAME);
                     insertRecordExecutionResult(record.key(), new RecordExecutionResult(record.value().getRecordData(), record.value().getExecutionName()));
                 } else {
+                    LOGGER.info("Record {} is not suitable for publication", record.key());
                     removeIndexedRecords(record.key().getRecordId(), TargetIndexingDatabase.valueOf(taskParameters.get(INDEXING_TARGET_DATABASE).getAsString()));
                     throw new TaskNotSuitableForPublicationException();
                 }

@@ -47,6 +47,7 @@ public class TransformationTopology {
             });
 
             try {
+                LOGGER.info("Starting transformation topology...");
                 streams.start();
                 latch.await();
             } catch (Throwable e) {
