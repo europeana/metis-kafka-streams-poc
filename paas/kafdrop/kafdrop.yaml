@@ -1,0 +1,36 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: kafdrop
+  name: kafdrop
+spec:
+  replicas: 1
+  selector:
+    app: kafdrop
+    deploymentconfig: kafdrop
+  template:
+    metadata:
+      labels:
+        app: kafdrop
+        deploymentconfig: kafdrop
+    spec:
+      containers:
+        - env:
+            - name: KAFKA_BROKERCONNECT
+              value: kafka-0.kafka:9092,kafka-1.kafka:9092,kafka-2.kafka:9092
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-kafdrop:latest
+          imagePullPolicy: IfNotPresent
+          name: kafdrop
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 300m
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File

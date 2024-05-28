@@ -1,0 +1,12 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: database-transfer-topology-config
+  labels:
+    app: database-transfer-topology
+    name: database-transfer-topology
+data:
+  database-transfer.properties: |-
+    KAFKA_HOSTS=kafka-0.kafka:9092,kafka-1.kafka:9092,kafka-2.kafka:9092
+    TOPIC_PARTITION_COUNT=3
+    TOPIC_REPLICATION_FACTOR=3

@@ -1,0 +1,46 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  labels:
+    app: enrichment-topology
+    component: enrichment-topology
+  name: enrichment-topology
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: enrichment-topology
+  serviceName: enrichment-topology
+  template:
+    metadata:
+      labels:
+        name: enrichment-topology
+        app: enrichment-topology
+    spec:
+      containers:
+        - name: enrichment-topology
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-kafka-app:latest
+          command: [ "sh", "-c", "java $(JVM_OPTIONS) -cp kafka-app.jar eu.europeana.cloud.topologies.EnrichmentTopology /config/enrichment.properties" ]
+          volumeMounts:
+            - mountPath: /config
+              name: enrichment-topology-config-volume
+          env:
+            - name: JVM_OPTIONS
+              value: "--add-opens java.base/java.lang=ALL-UNNAMED \
+              --add-opens java.base/java.util.stream=ALL-UNNAMED \
+              --add-opens java.base/java.util=ALL-UNNAMED \
+               --add-opens java.base/java.time=ALL-UNNAMED \
+               --add-opens java.base/java.net=ALL-UNNAMED \
+               --add-opens java.base/java.util.concurrent=ALL-UNNAMED \
+               --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED"
+          resources:
+            limits:
+              cpu: "900m"
+              memory: 2Gi
+            requests:
+              cpu: "450m"
+              memory: 1500Mi
+      volumes:
+        - name: enrichment-topology-config-volume
+          configMap:
+            name: enrichment-topology-config

@@ -1,0 +1,46 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  labels:
+    app: oai-harvest-topology
+    component: oai-harvest-topology
+  name: oai-harvest-topology
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: oai-harvest-topology
+  serviceName: oai-harvest-topology
+  template:
+    metadata:
+      labels:
+        name: oai-harvest-topology
+        app: oai-harvest-topology
+    spec:
+      containers:
+        - name: oai-harvest-topology
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-kafka-app:latest
+          command: [ "sh", "-c", "java $(JVM_OPTIONS) -cp kafka-app.jar eu.europeana.cloud.topologies.OAIHarvestTopology /config/oai-harvest.properties" ]
+          env:
+            - name: JVM_OPTIONS
+              value: "--add-opens java.base/java.lang=ALL-UNNAMED \
+                            --add-opens java.base/java.util.stream=ALL-UNNAMED \
+                            --add-opens java.base/java.util=ALL-UNNAMED \
+                             --add-opens java.base/java.time=ALL-UNNAMED \
+                             --add-opens java.base/java.net=ALL-UNNAMED \
+                             --add-opens java.base/java.util.concurrent=ALL-UNNAMED \
+                             --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED"
+          volumeMounts:
+            - mountPath: /config
+              name: oai-harvest-topology-config-volume
+          resources:
+            limits:
+              cpu: "900m"
+              memory: 2Gi
+            requests:
+              cpu: "450m"
+              memory: 1500Mi
+      volumes:
+        - name: oai-harvest-topology-config-volume
+          configMap:
+            name: oai-harvest-topology-config

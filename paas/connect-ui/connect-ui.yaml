@@ -1,0 +1,36 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: connect-ui
+  name: connect-ui
+spec:
+  replicas: 1
+  selector:
+    app: connect-ui
+    deploymentconfig: connect-ui
+  template:
+    metadata:
+      labels:
+        app: connect-ui
+        deploymentconfig: connect-ui
+    spec:
+      containers:
+        - env:
+            - name: KAFKA_CONNECT_URIS
+              value: http://connect-0.connect:8083
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-connect-ui:latest
+          imagePullPolicy: IfNotPresent
+          name: connect-ui
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 300m
+              memory: 2Gi
+            requests:
+              cpu: 200m
+              memory: 2Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File

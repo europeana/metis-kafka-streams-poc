@@ -1,0 +1,19 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    haproxy.router.openshift.io/ip_whitelist:
+  labels:
+    app: connect-ui
+  name: connect-ui-route
+spec:
+  host: kafka-streams-poc-connect-ui.apps.dcw1.paas.psnc.pl
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: connect-ui-service
+    weight: 100
+  wildcardPolicy: None

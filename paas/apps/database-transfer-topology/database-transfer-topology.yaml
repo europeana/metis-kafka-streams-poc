@@ -1,0 +1,46 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  labels:
+    app: database-transfer-topology
+    component: database-transfer-topology
+  name: database-transfer-topology
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: database-transfer-topology
+  serviceName: database-transfer-topology
+  template:
+    metadata:
+      labels:
+        name: database-transfer-topology
+        app: database-transfer-topology
+    spec:
+      containers:
+        - name: database-transfer-topology
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-kafka-app:latest
+          command: [ "sh", "-c", "java $(JVM_OPTIONS) -cp kafka-app.jar eu.europeana.cloud.topologies.DatabaseTransferTopology /config/database-transfer.properties" ]
+          volumeMounts:
+            - mountPath: /config
+              name: database-transfer-topology-config-volume
+          env:
+            - name: JVM_OPTIONS
+              value: "--add-opens java.base/java.lang=ALL-UNNAMED \
+              --add-opens java.base/java.util.stream=ALL-UNNAMED \
+              --add-opens java.base/java.util=ALL-UNNAMED \
+               --add-opens java.base/java.time=ALL-UNNAMED \
+               --add-opens java.base/java.net=ALL-UNNAMED \
+               --add-opens java.base/java.util.concurrent=ALL-UNNAMED \
+               --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED"
+          resources:
+            limits:
+              cpu: "900m"
+              memory: 2Gi
+            requests:
+              cpu: "450m"
+              memory: 1500Mi
+      volumes:
+        - name: database-transfer-topology-config-volume
+          configMap:
+            name: database-transfer-topology-config

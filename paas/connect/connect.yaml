@@ -1,0 +1,76 @@
+apiVersion: "apps/v1"
+kind: "StatefulSet"
+metadata:
+  labels:
+    app: connect
+    component: connect
+  name: connect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: connect
+      app: connect
+  serviceName: connect
+  template:
+    metadata:
+      labels:
+        name: connect
+        app: connect
+    spec:
+      containers:
+        - name: connect
+          image: registry.paas.psnc.pl/ecloud-poc/kafka-streams-connect:latest
+          ports:
+            - containerPort: 9092
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 600m
+              memory: 1Gi
+            requests:
+              cpu: 400m
+              memory: 1Gi
+          env:
+            - name: BOOTSTRAP_SERVERS
+              value: "kafka-0.kafka:9092,kafka-1.kafka:9092,kafka-2.kafka:9092"
+            - name: ADVERTISED_PORT
+              value: "8083"
+            - name: ADVERTISED_HOST_NAME
+              value: "connect-0.connect"
+            - name: GROUP_ID
+              value: "compose-connect-group"
+            - name: CONFIG_STORAGE_TOPIC
+              value: "docker-connect-configs"
+            - name: OFFSET_STORAGE_TOPIC
+              value: "docker-connect-offsets"
+            - name: STATUS_STORAGE_TOPIC
+              value: "docker-connect-status"
+            - name: ENABLE_SCHEMA_CONVERTERS
+              value: "true"
+            - name: KEY_CONVERTER
+              value: "org.apache.kafka.connect.json.JsonConverter"
+            - name: VALUE_CONVERTER
+              value: "org.apache.kafka.connect.json.JsonConverter"
+            - name: CONNECT_KEY_CONVERTER
+              value: "org.apache.kafka.connect.json.JsonConverter"
+            - name: CONNECT_VALUE_CONVERTER
+              value: "org.apache.kafka.connect.json.JsonConverter"
+            - name: CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE
+              value: "false" # Disable schema validation
+            - name: CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE
+              value: "false" # Disable schema validation
+            - name: LOG4J_ROOT_LOGLEVEL
+              value: "INFO"
+            - name: LOG4J_LOGGERS
+              value: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
+            - name: CONFIG_STORAGE_REPLICATION_FACTOR
+              value: "3"
+            - name: OFFSET_STORAGE_REPLICATION_FACTOR
+              value: "3"
+            - name: STATUS_STORAGE_REPLICATION_FACTOR
+              value: "3"
+            - name: OFFSET_FLUSH_INTERVAL_MS
+              value: "60000"
+            - name: PLUGIN_PATH
+              value: "/usr/share/java"

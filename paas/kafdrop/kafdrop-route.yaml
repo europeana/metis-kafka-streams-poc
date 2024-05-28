@@ -1,0 +1,19 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    haproxy.router.openshift.io/ip_whitelist:
+  labels:
+    app: kafdrop
+  name: kafdrop-route
+spec:
+  host: kafka-streams-poc-kafdrop.apps.dcw1.paas.psnc.pl
+  port:
+    targetPort: 9000
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: kafdrop-service
+    weight: 100
+  wildcardPolicy: None

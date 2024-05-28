@@ -1,0 +1,15 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: normalization-topology-config
+  labels:
+    app: normalization-topology
+    name: normalization-topology
+data:
+  normalization.properties: |-
+    KAFKA_HOSTS=kafka-0.kafka:9092,kafka-1.kafka:9092,kafka-2.kafka:9092
+    DB_ADDRESS=postgres-0.postgres
+    DB_PORT=5432
+    DB_NAME=poc-db
+    DB_USER=postgres
+    DB_PASSWORD=postgres
