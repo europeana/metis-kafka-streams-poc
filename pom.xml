@@ -12,9 +12,16 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <version.kafka-streams>3.6.1</version.kafka-streams>
         <version.ecloud>12-SNAPSHOT</version.ecloud>
         <version.metis>12-SNAPSHOT</version.metis>
         <version.slf4j>2.0.12</version.slf4j>
+        <version.jackson>2.14.3</version.jackson>
+        <version.gson>2.10.1</version.gson>
+        <version.commons-io>2.5</version.commons-io>
+        <version.spring>6.1.4</version.spring>
+        <version.postgresql>42.7.2</version.postgresql>
+        <version.logback>1.5.3</version.logback>
     </properties>
 
     <repositories>
@@ -58,39 +65,24 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
-                <configuration>
-                    <argLine>@{jacocoArgLine}
-                        --add-opens java.base/java.lang=ALL-UNNAMED
-                        --add-opens java.base/java.util.stream=ALL-UNNAMED
-                        --add-opens java.base/java.util=ALL-UNNAMED
-                        --add-opens java.base/java.time=ALL-UNNAMED
-                        --add-opens java.base/java.net=ALL-UNNAMED
-                        --add-opens java.base/java.util.concurrent=ALL-UNNAMED
-                        --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED
-                    </argLine>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <dependencies>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.5</version> <!-- Use the appropriate version -->
+            <version>${version.commons-io}</version> <!-- Use the appropriate version -->
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>
-            <version>3.6.1</version>
+            <version>${version.kafka-streams}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.10.1</version>
+            <version>${version.gson}</version>
         </dependency>
 
         <dependency>
@@ -158,7 +150,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>*</artifactId>
+                    <artifactId>log4j-slf4j-impl</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -168,8 +160,16 @@
             <version>${version.metis}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
+                    <groupId>io.netty</groupId>
                     <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.woodstox</groupId>
+                    <artifactId>woodstox-core-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.woodstox</groupId>
+                    <artifactId>stax2-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -177,12 +177,6 @@
             <groupId>eu.europeana.metis</groupId>
             <artifactId>metis-enrichment-client</artifactId>
             <version>${version.metis}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>eu.europeana.cloud</groupId>
@@ -192,17 +186,17 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>5.3.32</version>
+            <version>${version.spring}</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.2</version>
+            <version>${version.postgresql}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.3</version> <!-- Use the latest version -->
+            <version>${version.logback}</version> <!-- Use the latest version -->
         </dependency>
     </dependencies>
     <dependencyManagement>
@@ -217,6 +211,23 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${version.slf4j}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${version.jackson}</version> <!-- Use the appropriate version -->
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>${version.spring}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.16.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
